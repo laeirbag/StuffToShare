@@ -13,7 +13,7 @@
    | license@php.net so we can mail you a copy immediately.               |
    +----------------------------------------------------------------------+
    | Authors: Frank M. Kromann    <frank@kromann.info>                    |
-   |          Daniel Beulshausen  <daniel@php7win.de>                     |
+   |          Daniel Beulshausen  <daniel@php4win.de>                     |
    | Contribution:                                                        |
    |		  Philippe MAES       <luckyluke@dlfp.org>                    |
    +----------------------------------------------------------------------+
@@ -44,8 +44,8 @@ static int le_printer, le_brush, le_pen, le_font;
 
 COLORREF hex_to_rgb(char * hex);
 char *rgb_to_hex(COLORREF rgb);
-static void printer_close(zend_resource *resource);
-static void object_close(zend_resource *resource);
+static void printer_close(zend_resource *resource TSRMLS_DC);
+static void object_close(zend_resource *resource TSRMLS_DC);
 char *get_default_printer(void);
 
 zend_function_entry printer_functions[] = {
@@ -117,8 +117,8 @@ PHP_MINFO_FUNCTION(printer)
 
 static PHP_INI_MH(OnUpdatePrinter)
 {
-	//if (new_value != NULL && new_value_length > 0) {
-	if (new_value != NULL) {
+	//if (new_value != NULL && new_value_length > 0)
+	{
 		if (PRINTERG(default_printer)) {
 			pefree(PRINTERG(default_printer), 1);
 		}
@@ -153,11 +153,11 @@ PHP_INI_END()
 
 #define REGP_CONSTANT(a,b)	REGISTER_LONG_CONSTANT(a, b, CONST_CS | CONST_PERSISTENT);
 
-static void php_printer_init(zend_printer_globals *printer_globals) {
+static void php_printer_init(zend_printer_globals *printer_globals TSRMLS_DC) {
 	printer_globals->default_printer = get_default_printer();
 }
 
-static void php_printer_shutdown(zend_printer_globals *printer_globals) {
+static void php_printer_shutdown(zend_printer_globals *printer_globals TSRMLS_DC) {
 	if (printer_globals->default_printer) {
 		pefree(printer_globals->default_printer, 1);
 	}
@@ -274,6 +274,7 @@ PHP_FUNCTION(printer_open)
 
 	if( argc == 1 && zend_get_parameters_ex(1, &arg1) != FAILURE ) {
 		convert_to_string_ex(arg1);
+		//resource->name = Z_STRVAL_P(arg1);
 		resource->name = Z_STRVAL_P(arg1);
 	}
 	else if( argc == 0 ) {
@@ -315,9 +316,11 @@ PHP_FUNCTION(printer_close)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource(arg1,resource, -1, "Printer Handle", le_printer);
 
-	zend_list_delete(Z_RES_P(arg1));
+	zend_list_close(Z_RES_P(arg1));
+	
 }
 /* }}} */
 
@@ -336,7 +339,8 @@ PHP_FUNCTION(printer_write)
 	}
 
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource(arg1,resource, -1, "Printer Handle", le_printer);
 	convert_to_string_ex(arg2);
 
 	docinfo.pDocName	= (LPTSTR)resource->info.lpszDocName;
@@ -484,7 +488,8 @@ PHP_FUNCTION(printer_set_option)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource(arg1,resource, -1, "Printer Handle", le_printer);
 	convert_to_long_ex(arg2);
 
 	memset(&pd,0,sizeof(pd));
@@ -611,7 +616,8 @@ PHP_FUNCTION(printer_get_option)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource(arg1,resource, -1, "Printer Handle", le_printer);
 	convert_to_long_ex(arg2);
 
 	switch(Z_LVAL_P(arg2)) {
@@ -687,7 +693,8 @@ PHP_FUNCTION(printer_create_dc)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
 
 	if( resource->dc != NULL ) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Deleting old DeviceContext");
@@ -710,7 +717,7 @@ PHP_FUNCTION(printer_delete_dc)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource(arg1,resource, -1, "Printer Handle", le_printer);
 
 	if( resource->dc != NULL ) {
 		DeleteDC(resource->dc);
@@ -737,7 +744,8 @@ PHP_FUNCTION(printer_start_doc)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, parameter[0], -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, parameter[0], -1, "Printer Handle", le_printer);
+	zend_fetch_resource( parameter[0],resource, -1, "Printer Handle", le_printer);
 	
 	if(argc == 2) {
 		convert_to_string_ex(parameter[1]);
@@ -769,7 +777,8 @@ PHP_FUNCTION(printer_end_doc)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource(arg1,resource, -1, "Printer Handle", le_printer);
 
 	if(EndDoc(resource->dc) < 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "couldn't terminate print job");
@@ -792,7 +801,8 @@ PHP_FUNCTION(printer_start_page)
 		;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource(arg1,resource, -1, "Printer Handle", le_printer);
 
 	if(StartPage(resource->dc) < 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "couldn't start a new page");
@@ -815,7 +825,8 @@ PHP_FUNCTION(printer_end_page)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
 
 	if(EndPage(resource->dc) < 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "couldn't end the page");
@@ -864,9 +875,11 @@ PHP_FUNCTION(printer_delete_pen)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(pen, arg1, -1, "Pen Handle", le_pen);
+	//zend_fetch_resource(pen, HPEN, arg1, -1, "Pen Handle", le_pen);
+	zend_fetch_resource(arg1,pen, -1, "Pen Handle", le_pen);
 
-	zend_list_delete(Z_RES_P(arg1));
+	zend_list_close(Z_RES_P(arg1));
+	
 }
 /* }}} */
 
@@ -883,8 +896,10 @@ PHP_FUNCTION(printer_select_pen)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
-	zend_fetch_resource(pen, arg2, -1, "Pen Handle", le_pen);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource(arg1,resource, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(pen, HPEN, arg2, -1, "Pen Handle", le_pen);
+	zend_fetch_resource( arg2,pen, -1, "Pen Handle", le_pen);
 
 	SelectObject(resource->dc, pen);
 }
@@ -940,9 +955,11 @@ PHP_FUNCTION(printer_delete_brush)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(brush, arg1, -1, "Brush Handle", le_brush);
+	//zend_fetch_resource(brush, HBRUSH, arg1, -1, "Brush Handle", le_brush);
+	zend_fetch_resource(arg1,brush, -1, "Brush Handle", le_brush);
 
-	zend_list_delete(Z_RES_P(arg1));
+	zend_list_close(Z_RES_P(arg1));
+	
 }
 /* }}} */
 
@@ -959,8 +976,10 @@ PHP_FUNCTION(printer_select_brush)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
-	zend_fetch_resource(brush, arg2, -1, "Brush Handle", le_brush);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(brush, HBRUSH, arg2, -1, "Brush Handle", le_brush);
+	zend_fetch_resource( arg2,brush, -1, "Brush Handle", le_brush);
 
 	SelectObject(resource->dc, brush);
 }
@@ -1012,9 +1031,10 @@ PHP_FUNCTION(printer_delete_font)
 		WRONG_PARAM_COUNT;
 	}
 	
-	zend_fetch_resource(font, arg1, -1, "Font Handle", le_font);
+	//zend_fetch_resource(font, HFONT, arg1, -1, "Font Handle", le_font);
+	zend_fetch_resource( arg1,font, -1, "Font Handle", le_font);
 
-	zend_list_delete(Z_RES_P(arg1));
+	zend_list_close(Z_RES_P(arg1));
 }
 /* }}} */
 
@@ -1031,8 +1051,10 @@ PHP_FUNCTION(printer_select_font)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
-	zend_fetch_resource(font, arg2, -1, "Font Handle", le_font);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(font, HFONT, arg2, -1, "Font Handle", le_font);
+	zend_fetch_resource( arg2,font, -1, "Font Handle", le_font);
 
 	SelectObject(resource->dc, font);
 }
@@ -1050,7 +1072,8 @@ PHP_FUNCTION(printer_logical_fontheight)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
 
 	convert_to_long_ex(arg2);
 
@@ -1070,7 +1093,8 @@ PHP_FUNCTION(printer_draw_roundrect)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
 
 	convert_to_long_ex(arg2);
 	convert_to_long_ex(arg3);
@@ -1095,7 +1119,8 @@ PHP_FUNCTION(printer_draw_rectangle)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
 
 	convert_to_long_ex(arg2);
 	convert_to_long_ex(arg3);
@@ -1118,7 +1143,8 @@ PHP_FUNCTION(printer_draw_elipse)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
 
 	convert_to_long_ex(arg2);
 	convert_to_long_ex(arg3);
@@ -1141,7 +1167,8 @@ PHP_FUNCTION(printer_draw_text)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
 
 	convert_to_string_ex(arg2);
 	convert_to_long_ex(arg3);
@@ -1163,7 +1190,8 @@ PHP_FUNCTION(printer_draw_line)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
 
 	convert_to_long_ex(arg2);
 	convert_to_long_ex(arg3);
@@ -1187,7 +1215,8 @@ PHP_FUNCTION(printer_draw_chord)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
 
 	convert_to_long_ex(arg2);
 	convert_to_long_ex(arg3);
@@ -1214,7 +1243,8 @@ PHP_FUNCTION(printer_draw_pie)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
 
 	convert_to_long_ex(arg2);
 	convert_to_long_ex(arg3);
@@ -1260,7 +1290,8 @@ PHP_FUNCTION(printer_draw_bmp)
 			break;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
 	convert_to_string_ex(arg2);
 	convert_to_long_ex(arg3);
 	convert_to_long_ex(arg4);
@@ -1333,7 +1364,8 @@ PHP_FUNCTION(printer_abort)
 		WRONG_PARAM_COUNT;
 	}
 
-	zend_fetch_resource(resource, arg1, -1, "Printer Handle", le_printer);
+	//zend_fetch_resource(resource, printer *, arg1, -1, "Printer Handle", le_printer);
+	zend_fetch_resource( arg1,resource, -1, "Printer Handle", le_printer);
 	
 	AbortPrinter(resource->handle);
 }
@@ -1413,7 +1445,7 @@ char *rgb_to_hex(COLORREF rgb)
 	return string;
 } 
 
-static void printer_close(zend_resource *resource)
+static void printer_close(zend_resource *resource TSRMLS_DC)
 {
 	printer *p = (printer*)resource->ptr;
 
@@ -1435,7 +1467,7 @@ static void printer_close(zend_resource *resource)
 	}
 	efree(p);
 }
-static void object_close(zend_resource *resource)
+static void object_close(zend_resource *resource TSRMLS_DC)
 {
 	HGDIOBJ p = (HGDIOBJ)resource->ptr;
 	DeleteObject(p);
