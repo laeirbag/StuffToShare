@@ -1,0 +1,20 @@
+{
+	"title":"X",
+	"onScreen":
+	{
+		"main":
+		[
+			"[4D:q 1 Q][4D:w 2₩W][4D:eé3€EÉ][4D:rl4LR£®][4D:t†5‡T][4D:yd6¥DY][4D:u 7UúÚüÜ][4D:i∞8íIÍ][4D:p 9 P]",
+			"[4D:[ALL] [COPY][TAB][PASTE] [UNDO][REDO]][4D:~_=&][4D:aá@ÁAæÆ][4D:g   G][4D:h   H][4D:j   J][4D:kcçKCÇ¢©][4D:[ENTER][LEFT][UP][RIGHT][DOWN]][4D:oó0ÓO¤œŒ][4D:[]]",
+			" [4D:sz$§SZ][4D:x-+*X\/\\|※][4D:bvfFBVƒ][4D:nñ  NÑ][4D:m   M][4D:.,:;•\#%^‰][4D:[MC:>[PAUSE][W.LEFT]<[W.RIGHT][RIGHT]:<>][MC:)[PAUSE][W.LEFT]([W.RIGHT][RIGHT]:()][MC:[RB][PAUSE][W.LEFT][LB][W.RIGHT][RIGHT]:[LB][RB]][MC:}[PAUSE][W.LEFT]{[W.RIGHT][RIGHT]:{}][MC:?[PAUSE][W.LEFT]¿[W.RIGHT][RIGHT]:¿?][MC:![PAUSE][W.LEFT]¡[W.RIGHT][RIGHT]:¡!][MC:\"[PAUSE][W.LEFT]\"[W.RIGHT]\":\"\"][MC:'[PAUSE][W.LEFT]'[W.RIGHT]:'']] ",
+			" [Tool][4D:[END][HOME]][Space][4D:[DEL]  [FDEL]][SYM:¬] "
+		],
+		"sym":
+		[
+			"[4D:ｑ １ Ｑ][4D:ｗ ２￦Ｗ][4D:ｅ ３ Ｅ][4D:ｒｌ４ＬＲ￡][4D:ｔ ５ Ｔ][4D:ｙｄ６￥ＤＹ][4D:ｕ ７Ｕ][4D:ｉ ｕ Ｉ][4D:ｐ ９ Ｐ]",
+			"[4D:[ALL] [COPY][TAB][PASTE] [UNDO][REDO]][4D:～＿＝＆][4D:ａ＠Ａ][4D:ｇ   Ｇ][4D:ｈ   Ｈ][4D:ｊ   Ｊ][4D:ｋｃＫＣ￠][4D:[ENTER][LEFT][UP][RIGHT][DOWN]][4D:ｏ０Ｏ]",
+			" [4D:ｓｚ＄　ＳＺ][4D:ｘ－＋＊Ｘ／＼｜][4D:ｂｖｆＦＢＶ][4D:ｎ   Ｎ][4D:ｍ   Ｍ][4D:．，：；•＃％＾][4D:[MC:＞[PAUSE][W.LEFT]＜[W.RIGHT][RIGHT]:＜＞][MC:）[PAUSE][W.LEFT]（[W.RIGHT][RIGHT]:（）][MC:］[PAUSE][W.LEFT]［[W.RIGHT][RIGHT]:［］][MC:｝[PAUSE][W.LEFT]｛[W.RIGHT][RIGHT]:｛｝]？！[MC:＂[PAUSE][W.LEFT]＂[W.RIGHT][RIGHT]: ][MC:＇[PAUSE][W.LEFT]＂[W.RIGHT][RIGHT]:＇＇]] ",
+			" [Tool][4D:[END][HOME]]　[4D:[DEL]  [FDEL]][LOCK] "
+		]
+	}
+}
