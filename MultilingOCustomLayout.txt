@@ -1,3 +1,5 @@
+//Normie's ver
+
 {
 	"title":"X",
 	"onScreen":
@@ -15,6 +17,27 @@
 			"[4D:[ALL] [COPY][TAB][PASTE] [UNDO][REDO]][4D:～＿＝＆][4D:ａ＠Ａ][4D:ｇ   Ｇ][4D:ｈｆ ＦＨ][4D:ｊ   Ｊ][4D:ｋｃＫＣ￠][4D:[ENTER][LEFT][UP][RIGHT][DOWN][MC:[UP][LEFT]: ][MC:[UP][RIGHT]: ][MC:[DOWN][RIGHT]: ][MC:[DOWN][LEFT]: ]][4D:ｏ０Ｏ][4D:[END][HOME][MC:[CTRL][HOME]:↑] [MC:[CTRL][END]:↓]]",
 			" [4D:ｓｚ＄　ＳＺ][4D:ｘ－＋＊Ｘ／＼｜][4D:ｂ   Ｂ][4D:ｎ   Ｎ][4D:ｍ   Ｍ][4D:．，：；•＃％＾][4D:[MC:＞[PAUSE][W.LEFT]＜[W.RIGHT][RIGHT]:＜＞][MC:）[PAUSE][W.LEFT]（[W.RIGHT][RIGHT]:（）][MC:］[PAUSE][W.LEFT]［[W.RIGHT][RIGHT]:［］][MC:｝[PAUSE][W.LEFT]｛[W.RIGHT][RIGHT]:｛｝]？！[MC:＂[PAUSE][W.LEFT]＂[W.RIGHT][RIGHT]: ][MC:＇[PAUSE][W.LEFT]＂[W.RIGHT][RIGHT]:＇＇]] ",
 			"[Tool]　[4D:[DEL]  [FDEL]][LOCK] "
+		]
+	}
+}
+
+//Dankest Ver
+
+{
+	"title":"X",
+	"onScreen":
+	{
+		"main":
+		[
+			"[4D:[ESC] [COPY][ALL][PASTE] [UNDO][REDO]][4D:aá@ÁAæÆ][4D:qgwQGW₩][4D:rl LR£®][4D:tx†TX‡+※×][4D:ydjYDJ¥][4D:uv VUúÚüÜ] ",
+			"[4D:hfpbƒHFPB][4D:kcçKCÇ¢©][4D:542681397][4D:oó0ÓO¤œŒ∞][4D:ieIEíÍéÉ€][4D:[MC:>[PAUSE][W.LEFT]<[W.RIGHT][RIGHT]:<>][MC:)[PAUSE][W.LEFT]([W.RIGHT][RIGHT]:()][MC:[RB][PAUSE][W.LEFT][LB][W.RIGHT][RIGHT]:[LB][RB]][MC:}[PAUSE][W.LEFT]{[W.RIGHT][RIGHT]:{}][MC:?[PAUSE][W.LEFT]¿[W.RIGHT][RIGHT]:¿?][MC:![PAUSE][W.LEFT]¡[W.RIGHT][RIGHT]:¡!][MC:\"[PAUSE][W.LEFT]\"[W.RIGHT]\":\"\"][MC:'[PAUSE][W.LEFT]'[W.RIGHT]:'']][4D:[ENTER][LEFT][UP][RIGHT][DOWN][MC:[UP][LEFT]: ][MC:[UP][RIGHT]: ][MC:[DOWN][RIGHT]: ][MC:[DOWN][LEFT]: ]][4D:[END][HOME][MC:[CTRL][HOME]:↑] [MC:[CTRL][END]:↓]]",
+			"[SYM:¬][Space][4D:[DEL] [TAB][FDEL]][4D:~_=& ^#][4D:-*\/ \\|][4D:sz$§SZ][4D:nmñ NMÑ][4D:.,:;•\#%^‰]"
+		],
+		"sym":
+		[
+			"[4D:[ESC] [COPY][ALL][PASTE] [UNDO][REDO]][4D:ａ＠Ａ][4D:ｑｇｗＱＧＷ￦][4D:ｒｌ ＬＲ￡][4D:ｔｘ ＴＸ＋][4D:ｙｄｊＹＤＪ￥][4D:ｕｖ ＵＶ] ",
+			"[4D:ｈｆｐｂＨＦＰＢ][4D:ｋｃＫＣ￠][4D:542681397][4D:ｏ０Ｏ][4D:ｉｅ  ＩＥ][4D:[MC:＞[PAUSE][W.LEFT]＜[W.RIGHT][RIGHT]:＜＞][MC:）[PAUSE][W.LEFT]（[W.RIGHT][RIGHT]:（）][MC:］[PAUSE][W.LEFT]［[W.RIGHT][RIGHT]:［］][MC:｝[PAUSE][W.LEFT]｛[W.RIGHT][RIGHT]:｛｝]？！[MC:＂[PAUSE][W.LEFT]＂[W.RIGHT][RIGHT]: ][MC:＇[PAUSE][W.LEFT]＂[W.RIGHT][RIGHT]:＇＇]][4D:[ENTER][LEFT][UP][RIGHT][DOWN][MC:[UP][LEFT]: ][MC:[UP][RIGHT]: ][MC:[DOWN][RIGHT]: ][MC:[DOWN][LEFT]: ]][4D:[END][HOME][MC:[CTRL][HOME]:↑] [MC:[CTRL][END]:↓]]",
+			"[LOCK][4D:[ALL][COPY][TAB][PASTE] [UNDO][REDO]]　[4D:[DEL] [TAB][FDEL]][4D:～＿＝＆ ＾＃][4D:－＋＊／ ＼｜][4D:ｓｚ＄ ＳＺ][4D:ｎｍ  ＮＭ][4D:．，：；•％]"
 		]
 	}
 }
