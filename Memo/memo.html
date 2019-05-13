@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset = 'utf-8'>
+		<meta http-equiv = 'X-UA-Compatible' content = 'IE = edge'>
+		<meta name = 'viewport' content = 'width = device-width, initial-scale = 1'>
+		<link href = 'res/bootstrap.css' rel = 'stylesheet'>
+		<script src = 'res/angular.js'></script>
+		<script>
+			angular
+				.module('bulkApiInsert',[])
+				.controller
+				(
+					'populator',
+					function($scope, $timeout $http)
+					{
+						var string = "";
+						var leadingZeros = 0;
+						var j;
+
+						for(let i = 0; i < 2000; i++)
+						{
+							leadingZeros = 4 - (i + "").length;
+
+							string = "";
+
+							for(j = 0; j < leadingZeros; j++)
+							{
+								string += "0";
+							}
+
+							string += i;
+
+							$http.post
+							(
+								"http://52.2.180.116:8082/api/devices",
+								{
+									uniqueId : string,
+									name : "md"+ string
+								},
+								
+							).
+							then
+							(
+								null,
+								function(result)
+								{
+									alert();
+								}
+							);
+						}
+					}
+				);
+		</script>
+	</head>
+	<body ng-app = 'bulkApiInsert' ng-controller = 'populator'>
+	</body>
+</html>
