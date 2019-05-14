@@ -10,19 +10,54 @@
 					"planner",
 					function($scope, $timeout)
 					{
-						var i;
-						var j;
-						var k;
-						var l;
-						var batches;
-						var subBatches;
-						var concepts;
-						var estimatedConcepts;
-						var start;
-						var day;
-						var end;
-						var startTimestamp;
-						var endTimestamp;
+						function yearWeek(dateData)
+						{
+							var date;
+							var year;
+							var nDay;
+							var n1stThursday;
+							var week;
+
+							date = new Date(dateData.valueOf());
+							year = date.getFullYear();
+
+								// ISO week date weeks start on Monday, so correct the day number
+							nDay = (date.getDay() + 6) % 7;
+
+								// ISO 8601 states that week 1 is the week with the first Thursday of that year
+								// Set the target date to the Thursday in the target week
+							date.setDate(date.getDate() - nDay + 3);
+
+								// Store the millisecond value of the target date
+							n1stThursday = date.valueOf();
+
+								// Set the target to the first Thursday of the year
+								// First, set the target to January 1st
+							date.setMonth(0, 1);
+
+								// Not a Thursday? Correct the date to the next Thursday
+							if (date.getDay() !== 4)
+							{
+								date.setMonth(0, 1 + ((4 - date.getDay()) + 7) % 7);
+							}
+
+								// The week number is the number of weeks between the first Thursday of the year
+								// and the Thursday in the target week (604800000 = 7 * 24 * 3600 * 1000)
+
+							week = 1 + Math.ceil((n1stThursday - date) / 604800000);
+
+							if(week < 10)
+							{
+								week = "0" + week;
+							}
+
+							//return year + " #" + week;
+							return{
+								id : year + "#" + week,
+								year : year,
+								week : week
+							};
+						};
 
 						function getTaskStuff(task, movable)
 						{
@@ -35,10 +70,79 @@
 							};
 						};
 
+						function getDayStuff(day, weekDay)
+						{
+							var monthStuff = day.getMonth() + 1;
+
+							var dayStuff=
+							{
+								day : day.getDate(),
+								dayCode : day.getDate(),
+								month : day.getMonth(),
+								monthCode : monthStuff,
+								year : day.getYear(),
+								weekDay : weekDay
+							};
+
+							if(dayStuff.dayCode < 10)
+							{
+								dayStuff.dayCode = "0" + dayStuff.dayCode;
+							}
+
+							if(dayStuff.monthCode < 10)
+							{
+								dayStuff.monthCode = "0" + dayStuff.monthCode;
+							}
+
+							return dayStuff;
+						};
+
+						function newWeekData(weekData)
+						{
+							return {
+								id : weekData.id,
+								name : "S" + weekData.week,
+								days : 1
+							};
+						};
+
+						function newMonthData(monthData)
+						{
+							return {
+								id : monthData.id,
+								name : $scope.Month[monthData.index],
+								days : 1
+							};
+						};
+
 						function init()
 						{
+							var i;
+							var j;
+							var k;
+							var l;
+							var batches;
+							var subBatches;
+							var concepts;
+							var estimatedConcepts;
+							var start;
+							var day;
+							var end;
+							var startTimestamp;
+							var endTimestamp;
+							var weekData;
+							var monthData;
+							var weekDay;
+							var monthDay;
+							var dayStuff;
+
 							$scope.days = [];
+							$scope.weeks = {};
+							$scope.months = {};
+							$scope.years = [];
 							$scope.tasks = [];
+							$scope.keys = Object.keys;
+
 							$scope.weekDay=
 							[
 								"Do",
@@ -64,45 +168,6 @@
 								"Nov",
 								"Dic"
 							];
-
-							$scope.yearWeek = function(dateData)
-							{
-								var date = new Date(dateData.valueOf());
-
-								var year = date.getFullYear();
-
-									// ISO week date weeks start on Monday, so correct the day number
-								var nDay = (date.getDay() + 6) % 7;
-
-									// ISO 8601 states that week 1 is the week with the first Thursday of that year
-									// Set the target date to the Thursday in the target week
-								date.setDate(date.getDate() - nDay + 3);
-
-									// Store the millisecond value of the target date
-								var n1stThursday = date.valueOf();
-
-									// Set the target to the first Thursday of the year
-									// First, set the target to January 1st
-								date.setMonth(0, 1);
-
-									// Not a Thursday? Correct the date to the next Thursday
-								if (date.getDay() !== 4)
-								{
-									date.setMonth(0, 1 + ((4 - date.getDay()) + 7) % 7);
-								}
-
-									// The week number is the number of weeks between the first Thursday of the year
-									// and the Thursday in the target week (604800000 = 7 * 24 * 3600 * 1000)
-
-								week = 1 + Math.ceil((n1stThursday - date) / 604800000);
-
-								if(week < 10)
-								{
-									week = "0" + week;
-								}
-
-								return year + " #" + week;
-							};
 
 							var tree=
 							[
@@ -189,25 +254,55 @@
 							startTimestamp = JSON.stringify(start);
 							endTimestamp = JSON.stringify(end);
 
-							$scope.days.push
-							({
-								day : day.getDate(),
-								month : day.getMonth()+1,
-								year : day.getYear(),
-								weekDay : day.getDay()
-							});
+							weekDay = day.getDay();
+							dayStuff = getDayStuff(day, day.getDay());
+							$scope.days.push(dayStuff);
+
+							weekData = yearWeek(day);
+							$scope.weeks[weekData.id] = newWeekData(weekData);
+
+							monthData=
+							{
+								id : dayStuff.year + "_" + dayStuff.monthCode,
+								index : dayStuff.month,
+								days : 1
+							};
+
+							$scope.months[monthData.id] = newMonthData(monthData);
 
 							while(JSON.stringify(day).split("T")[0] != endTimestamp.split("T")[0])
 							{
 								day.setDate(day.getDate() + 1);
+								weekDay = day.getDay();
+								monthDay = day.getDate();
+								dayStuff = getDayStuff(day, weekDay);
+								$scope.days.push(dayStuff);
 
-								$scope.days.push
-								({
-									day : day.getDate(),
-									month : day.getMonth()+1,
-									year : day.getYear(),
-									weekDay : day.getDay()
-								});
+								if(weekDay != 1)
+								{
+									$scope.weeks[weekData.id].days++;
+								}
+								else
+								{
+									weekData = yearWeek(day);
+									$scope.weeks[weekData.id] = newWeekData(weekData);
+								}
+
+								if(monthDay != 1)
+								{
+									$scope.months[monthData.id].days++;
+								}
+								else
+								{
+									monthData=
+									{
+										id : dayStuff.year + "_" + dayStuff.monthCode,
+										index : dayStuff.month,
+										days : 1
+									};
+
+									$scope.months[monthData.id] = newMonthData(monthData);
+								}
 							}
 						};
 
@@ -252,6 +347,18 @@
 					<td colspan="2">z</td>
 				</tbody>-->
 				<tbody>
+					<tr>
+						<td ng-repeat="month in keys(months)" colspan="{{months[month].days}}" style="text-align : center; border : 1px solid #000000;">
+							{{months[month].name}}
+						</td>
+					</tr>
+				</tbody>
+				<tbody>
+					<tr ng-if="keys(weeks).length > 1">
+						<td ng-repeat = "week in keys(weeks)" colspan="{{weeks[week].days}}" style="text-align : center; border : 1px solid #000000;">
+							{{weeks[week].name}}
+						</td>
+					</tr>
 					<tr>
 						<td ng-repeat="day in days">
 							<div style="border : 1px solid #000000; text-align : right; width : 50px;">
