@@ -1,6 +1,7 @@
 <!DOCTYPE>
 <html>
 	<head>
+		<title>MOFG</title>
 		<script src = "angular-1.7.8/angular.js"></script>
 		<script>
 			angular
@@ -80,7 +81,7 @@
 								dayCode : day.getDate(),
 								month : day.getMonth(),
 								monthCode : monthStuff,
-								year : day.getYear(),
+								year : JSON.stringify(day).replace("\"", "").split("T")[0].split("-")[0],
 								weekDay : weekDay
 							};
 
@@ -106,11 +107,11 @@
 							};
 						};
 
-						function newMonthData(monthData)
+						function newMonthData(dayStuff)
 						{
 							return {
-								id : monthData.id,
-								name : $scope.Month[monthData.index],
+								id : dayStuff.year + "_" + dayStuff.monthCode,
+								index : dayStuff.month,
 								days : 1
 							};
 						};
@@ -135,11 +136,13 @@
 							var weekDay;
 							var monthDay;
 							var dayStuff;
+							var yearIndex = -1;
 
 							$scope.days = [];
 							$scope.weeks = {};
 							$scope.months = {};
 							$scope.years = [];
+							$scope.yearDays = [];
 							$scope.tasks = [];
 							$scope.keys = Object.keys;
 
@@ -154,7 +157,7 @@
 								"Sa"
 							];
 
-							$scope.Month=
+							$scope.monthName=
 							[
 								"Ene",
 								"Feb",
@@ -255,20 +258,18 @@
 							endTimestamp = JSON.stringify(end);
 
 							weekDay = day.getDay();
-							dayStuff = getDayStuff(day, day.getDay());
+							dayStuff = getDayStuff(day, weekDay);
 							$scope.days.push(dayStuff);
 
 							weekData = yearWeek(day);
 							$scope.weeks[weekData.id] = newWeekData(weekData);
 
-							monthData=
-							{
-								id : dayStuff.year + "_" + dayStuff.monthCode,
-								index : dayStuff.month,
-								days : 1
-							};
+							monthData = newMonthData(dayStuff);
+							$scope.months[monthData.id] = monthData;
 
-							$scope.months[monthData.id] = newMonthData(monthData);
+							$scope.years.push(dayStuff.year);
+							yearIndex++;
+							$scope.yearDays[yearIndex] = 1;
 
 							while(JSON.stringify(day).split("T")[0] != endTimestamp.split("T")[0])
 							{
@@ -294,14 +295,19 @@
 								}
 								else
 								{
-									monthData=
-									{
-										id : dayStuff.year + "_" + dayStuff.monthCode,
-										index : dayStuff.month,
-										days : 1
-									};
+									monthData = newMonthData(dayStuff);
+									$scope.months[monthData.id] = monthData;
+								}
 
-									$scope.months[monthData.id] = newMonthData(monthData);
+								if(dayStuff.year == $scope.years[yearIndex])
+								{
+									$scope.yearDays[yearIndex]++;
+								}
+								else
+								{
+									$scope.years.push(dayStuff.year);
+									yearIndex++;
+									$scope.yearDays[yearIndex] = 1;
 								}
 							}
 						};
@@ -312,50 +318,31 @@
 		</script>
 	</head>
 	<body ng-app="gantt" ng-controller="planner">
-		<div style="width : 100%;overflow-x : auto;">
+		<div style="width : 100%; overflow-x : auto;">
 			<table style="width : 100%; border : 1px solid #000000;">
-				<!--<tbody>
+				<tbody ng-if="years.length > 1">
 					<tr>
-						<td colspan="7">a</td>
-						<td colspan="7">b</td>
-						<td colspan="7">c</td>
-						<td colspan="7">d</td>
+						<td ng-repeat="year in years" style="text-align : center; border : 1px solid #000000;"
+						  colspan="{{yearDays[$index]}}"
+						>
+							{{year}}
+						</td>
 					</tr>
 				</tbody>
-				<tbody>
-					<td colspan="5">e</td>
-					<td colspan="5">f</td>
-					<td colspan="5">g</td>
-					<td colspan="5">h</td>
-					<td colspan="5">i</td>
-					<td colspan="3">j</td>
-				</tbody>
-				<tbody>
-					<td colspan="2">k</td>
-					<td colspan="2">l</td>
-					<td colspan="2">m</td>
-					<td colspan="2">n</td>
-					<td colspan="2">o</td>
-					<td colspan="2">p</td>
-					<td colspan="2">q</td>
-					<td colspan="2">r</td>
-					<td colspan="2">s</td>
-					<td colspan="2">t</td>
-					<td colspan="2">w</td>
-					<td colspan="2">x</td>
-					<td colspan="2">y</td>
-					<td colspan="2">z</td>
-				</tbody>-->
-				<tbody>
+				<tbody ng-if="keys(months).length > 1">
 					<tr>
-						<td ng-repeat="month in keys(months)" colspan="{{months[month].days}}" style="text-align : center; border : 1px solid #000000;">
-							{{months[month].name}}
+						<td ng-repeat="month in keys(months)" style="text-align : center; border : 1px solid #000000;"
+						  colspan="{{months[month].days}}"
+						>
+							{{monthName[months[month].index]}}
 						</td>
 					</tr>
 				</tbody>
 				<tbody>
 					<tr ng-if="keys(weeks).length > 1">
-						<td ng-repeat = "week in keys(weeks)" colspan="{{weeks[week].days}}" style="text-align : center; border : 1px solid #000000;">
+						<td ng-repeat = "week in keys(weeks)" style="text-align : center; border : 1px solid #000000;"
+						  colspan="{{weeks[week].days}}"
+						>
 							{{weeks[week].name}}
 						</td>
 					</tr>
