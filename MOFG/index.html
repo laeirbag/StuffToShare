@@ -1,0 +1,273 @@
+<!DOCTYPE>
+<html>
+	<head>
+		<script src = "angular-1.7.8/angular.js"></script>
+		<script>
+			angular
+				.module("gantt",[])
+				.controller
+				(
+					"planner",
+					function($scope, $timeout)
+					{
+						var i;
+						var j;
+						var k;
+						var l;
+						var batches;
+						var subBatches;
+						var concepts;
+						var estimatedConcepts;
+						var start;
+						var day;
+						var end;
+						var startTimestamp;
+						var endTimestamp;
+
+						function getTaskStuff(task, movable)
+						{
+							return{
+								name : task.name,
+								start : task.start,
+								end : task.end,
+								progress : task.progress,
+								movable : movable
+							};
+						};
+
+						function init()
+						{
+							$scope.days = [];
+							$scope.tasks = [];
+							$scope.weekDay=
+							[
+								"Do",
+								"Lu",
+								"Ma",
+								"Mi",
+								"Ju",
+								"Vi",
+								"Sa"
+							];
+
+							$scope.Month=
+							[
+								"Ene",
+								"Feb",
+								"Mar",
+								"Abr",
+								"May",
+								"Jun",
+								"Jul",
+								"Ago",
+								"Oct",
+								"Nov",
+								"Dic"
+							];
+
+							$scope.yearWeek = function(dateData)
+							{
+								var date = new Date(dateData.valueOf());
+
+								var year = date.getFullYear();
+
+									// ISO week date weeks start on Monday, so correct the day number
+								var nDay = (date.getDay() + 6) % 7;
+
+									// ISO 8601 states that week 1 is the week with the first Thursday of that year
+									// Set the target date to the Thursday in the target week
+								date.setDate(date.getDate() - nDay + 3);
+
+									// Store the millisecond value of the target date
+								var n1stThursday = date.valueOf();
+
+									// Set the target to the first Thursday of the year
+									// First, set the target to January 1st
+								date.setMonth(0, 1);
+
+									// Not a Thursday? Correct the date to the next Thursday
+								if (date.getDay() !== 4)
+								{
+									date.setMonth(0, 1 + ((4 - date.getDay()) + 7) % 7);
+								}
+
+									// The week number is the number of weeks between the first Thursday of the year
+									// and the Thursday in the target week (604800000 = 7 * 24 * 3600 * 1000)
+
+								week = 1 + Math.ceil((n1stThursday - date) / 604800000);
+
+								if(week < 10)
+								{
+									week = "0" + week;
+								}
+
+								return year + " #" + week;
+							};
+
+							var tree=
+							[
+								{
+									name : "Project",
+									start : "2019-03-02",
+									end : "2019-07-17",
+									progress : 76,
+									movable : false
+								},
+								{
+									name : "Batch",
+									start : "2019-04-15",
+									end : "2019-07-15",
+									progress : 15,
+									parts:
+									[
+										{
+											name : "Sub Batch",
+											start : "2019-04-15",
+											end : "2019-06-25",
+											progress : 23,
+											parts:
+											[
+												{
+													nane : "Concept",
+													start : "2019-04-16",
+													end : "2019-06-20",
+													progress : 80,
+													parts:
+													[
+														{
+															name : "Estimated Concept 0",
+															start : "2019-04-20",
+															end : "2019-07-10",
+															progress : 15
+														},
+														{
+															name : "Estimated Concept 1",
+															start : "2019-06-05",
+															end : "2019-06-10",
+															progress : 37
+														}
+													]
+												}
+											]
+										}
+									]
+								}
+							];
+
+							for(i = 0, batches = tree.length; i < batches; i++)
+							{
+								$scope.tasks.push(getTaskStuff(tree[i], false));
+
+								if(tree[i].parts)
+								{
+									for(j = 0, subBatches = tree[i].parts.length; j < subBatches; j++)
+									{
+										$scope.tasks.push(getTaskStuff(tree[i].parts[j], false));
+
+										if(tree[i].parts[j].parts)
+										{
+											for(k = 0, concepts = tree[i].parts[j].parts.length; k < concepts; k++)
+											{
+												$scope.tasks.push(getTaskStuff(tree[i].parts[j].parts[k], false));
+
+												if(tree[i].parts[j].parts[k].parts)
+												{
+													for(l = 0, estimatedConcepts = tree[i].parts[j].parts[k].parts.length; l < estimatedConcepts; l++)
+													{
+														$scope.tasks.push(getTaskStuff(tree[i].parts[j].parts[k].parts[l], true));
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+
+							start = new Date($scope.tasks[0].start + "T23:59:00.000Z");
+							day = new Date(start);
+							end = new Date($scope.tasks[0].end + "T23:59:00.000Z");
+							startTimestamp = JSON.stringify(start);
+							endTimestamp = JSON.stringify(end);
+
+							$scope.days.push
+							({
+								day : day.getDate(),
+								month : day.getMonth()+1,
+								year : day.getYear(),
+								weekDay : day.getDay()
+							});
+
+							while(JSON.stringify(day).split("T")[0] != endTimestamp.split("T")[0])
+							{
+								day.setDate(day.getDate() + 1);
+
+								$scope.days.push
+								({
+									day : day.getDate(),
+									month : day.getMonth()+1,
+									year : day.getYear(),
+									weekDay : day.getDay()
+								});
+							}
+						};
+
+						init();
+					}
+				);
+		</script>
+	</head>
+	<body ng-app="gantt" ng-controller="planner">
+		<div style="width : 100%;overflow-x : auto;">
+			<table style="width : 100%; border : 1px solid #000000;">
+				<!--<tbody>
+					<tr>
+						<td colspan="7">a</td>
+						<td colspan="7">b</td>
+						<td colspan="7">c</td>
+						<td colspan="7">d</td>
+					</tr>
+				</tbody>
+				<tbody>
+					<td colspan="5">e</td>
+					<td colspan="5">f</td>
+					<td colspan="5">g</td>
+					<td colspan="5">h</td>
+					<td colspan="5">i</td>
+					<td colspan="3">j</td>
+				</tbody>
+				<tbody>
+					<td colspan="2">k</td>
+					<td colspan="2">l</td>
+					<td colspan="2">m</td>
+					<td colspan="2">n</td>
+					<td colspan="2">o</td>
+					<td colspan="2">p</td>
+					<td colspan="2">q</td>
+					<td colspan="2">r</td>
+					<td colspan="2">s</td>
+					<td colspan="2">t</td>
+					<td colspan="2">w</td>
+					<td colspan="2">x</td>
+					<td colspan="2">y</td>
+					<td colspan="2">z</td>
+				</tbody>-->
+				<tbody>
+					<tr>
+						<td ng-repeat="day in days">
+							<div style="border : 1px solid #000000; text-align : right; width : 50px;">
+								{{weekDay[day.weekDay]}}
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td ng-repeat="day in days">
+							<div style="border : 1px solid #000000; text-align : right; width : 50px;">
+								{{day.day}}
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</body>
+</html>
