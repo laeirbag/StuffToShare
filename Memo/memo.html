@@ -1,58 +1,140 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset = 'utf-8'>
-		<meta http-equiv = 'X-UA-Compatible' content = 'IE = edge'>
-		<meta name = 'viewport' content = 'width = device-width, initial-scale = 1'>
-		<link href = 'res/bootstrap.css' rel = 'stylesheet'>
-		<script src = 'res/angular.js'></script>
+		<meta charset='utf-8'>
+		<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+		<meta name='viewport' content='width=device-width, initial-scale=1'>
+		<link href='res/bootstrap.css' rel='stylesheet'>
+		<script src='res/angular.js'></script>
 		<script>
 			angular
-				.module('bulkApiInsert',[])
+				.module('memoria',[])
 				.controller
 				(
-					'populator',
-					function($scope, $timeout $http)
+					'memorama',
+					function($scope, $timeout)
 					{
-						var string = "";
-						var leadingZeros = 0;
-						var j;
+						var base='res/';
+						var levantados=0;
+						levantados=[];
+						var resueltos=0;
+						var complemento=0;
+						$scope.baraja=[];
+						var levantadas=[];
 
-						for(let i = 0; i < 2000; i++)
+						$scope.espera=false;
+						$scope.terminado=false;
+
+						var Carta=function(id,imagen,complemento)
 						{
-							leadingZeros = 4 - (i + "").length;
+							this.id=id;
+							this.imagen=base+imagen;
+							this.mostrado=false;
+							this.resuelto=false;
 
-							string = "";
-
-							for(j = 0; j < leadingZeros; j++)
+							this.muestra=function()
 							{
-								string += "0";
-							}
-
-							string += i;
-
-							$http.post
-							(
-								"http://52.2.180.116:8082/api/devices",
+								if(!this.resuelto)
 								{
-									uniqueId : string,
-									name : "md"+ string
-								},
-								
-							).
-							then
-							(
-								null,
-								function(result)
-								{
-									alert();
-								}
-							);
-						}
+									if(!this.mostrado&&!$scope.espera)
+									{
+										this.mostrado=true;
+										if(levantados.length<2)
+										{
+											levantados.push(this.id);
+											if(levantados.length==2)
+											{
+												complemento=this.id+(1-(this.id%2)*2);
+												if(levantados[0]!=complemento)
+												{
+													$scope.espera=true;
+													$timeout
+													(
+														function()
+														{
+															$scope.baraja[levantados[0]].mostrado=false;
+															$scope.baraja[levantados[1]].mostrado=false;
+															this.mostrado=false;
+															$scope.espera = false;
+															levantados=[];
+														},
+														2000
+													);
+												}
+												else
+												{
+													this.resuelto=true;
+													$scope.baraja[complemento].resuelto=true;
+													resueltos++;
+													if(resueltos==pares)
+													{
+														$scope.terminado=true;
+													};
+													levantados=[];
+												};
+											};
+										}
+									};
+								};
+							};
+						};
+
+						var cartas=
+						[
+							['1.png','uno.png'],
+							['2.png','dos.png'],
+							['3.png','tre.png'],
+							['4.png','cuatro.png'],
+							['5.png','cinco.png'],
+							['6.png','seis.png']
+						];
+						var pares=cartas.length;
+						var numeros=[];
+
+						var i;
+
+						for(i=0;i<pares;i++)
+						{
+							$scope.baraja.push(new Carta(i*2,cartas[i][0]));
+							$scope.baraja.push(new Carta((i*2)+1,cartas[i][1]));
+							numeros.push(i*2);
+							numeros.push((i*2)+1);
+						};
+
+						var total=pares*2;
+						var restantes=total;
+						$scope.barajados=[];
+
+						var indice=0;
+						for(i=0;i<total;i++,restantes--)
+						{
+							indice=Math.floor((Math.random()*restantes));
+							$scope.barajados[i]=$scope.baraja[numeros[indice]];
+							numeros.splice(indice,1);
+						};
 					}
 				);
 		</script>
 	</head>
-	<body ng-app = 'bulkApiInsert' ng-controller = 'populator'>
+	<body ng-app='memoria' ng-controller='memorama'>
+		<div>
+			<div class='container'>
+				<div class='table'>
+					<div class='row'>
+						<div
+						  ng-repeat='barajado in barajados'
+						  style='margin-top:20px;'
+						  class='col-md-1 col-sm-3 panel panel-default'
+						  ng-click='barajado.muestra()'
+						  align='center'
+						>
+							<div style='width:64px;height:64px;background-color:#00FF00;' ng-show='!barajado.mostrado'>
+							</div>
+							<img ng-show='barajado.mostrado' class='img-responsive' style='max-width:64px;' ng-src='{{barajado.imagen}}'>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>
