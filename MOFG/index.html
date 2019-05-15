@@ -2,6 +2,18 @@
 <html>
 	<head>
 		<title>MOFG</title>
+		<style>
+			.table
+			{
+				border : 1px solid #000000;
+				text-align : right;
+			}
+
+			.cell
+			{
+				width : 50px;
+			}
+		</style>
 		<script src = "angular-1.7.8/angular.js"></script>
 		<script>
 			angular
@@ -71,7 +83,7 @@
 							};
 						};
 
-						function getDayStuff(day, weekDay)
+						function getDayStuff(day, weekDay, yearDay)
 						{
 							var monthStuff = day.getMonth() + 1;
 
@@ -82,7 +94,8 @@
 								month : day.getMonth(),
 								monthCode : monthStuff,
 								year : JSON.stringify(day).replace("\"", "").split("T")[0].split("-")[0],
-								weekDay : weekDay
+								weekDay : weekDay,
+								yearDay : yearDay
 							};
 
 							if(dayStuff.dayCode < 10)
@@ -102,7 +115,7 @@
 						{
 							return {
 								id : weekData.id,
-								name : "S" + weekData.week,
+								name : /*"S" +*/ weekData.week,
 								days : 1
 							};
 						};
@@ -127,6 +140,8 @@
 							var concepts;
 							var estimatedConcepts;
 							var start;
+							var yearStart;
+							var yearDay;
 							var day;
 							var end;
 							var startTimestamp;
@@ -252,13 +267,17 @@
 							}
 
 							start = new Date($scope.tasks[0].start + "T23:59:00.000Z");
+							yearStart = new Date(start);
+							yearStart.setDate(1);
+							yearStart.setMonth(0);
+							yearDay = Math.ceil(Math.abs(start.getTime() - yearStart.getTime()) / 86400000) + 1;
 							day = new Date(start);
 							end = new Date($scope.tasks[0].end + "T23:59:00.000Z");
 							startTimestamp = JSON.stringify(start);
 							endTimestamp = JSON.stringify(end);
 
 							weekDay = day.getDay();
-							dayStuff = getDayStuff(day, weekDay);
+							dayStuff = getDayStuff(day, weekDay, yearDay);
 							$scope.days.push(dayStuff);
 
 							weekData = yearWeek(day);
@@ -277,7 +296,6 @@
 								weekDay = day.getDay();
 								monthDay = day.getDate();
 								dayStuff = getDayStuff(day, weekDay);
-								$scope.days.push(dayStuff);
 
 								if(weekDay != 1)
 								{
@@ -302,13 +320,19 @@
 								if(dayStuff.year == $scope.years[yearIndex])
 								{
 									$scope.yearDays[yearIndex]++;
+									yearDay++;
 								}
 								else
 								{
 									$scope.years.push(dayStuff.year);
 									yearIndex++;
 									$scope.yearDays[yearIndex] = 1;
+									yearDay = 1;
 								}
+
+								dayStuff.yearDay = yearDay;
+
+								$scope.days.push(dayStuff);
 							}
 						};
 
@@ -318,50 +342,109 @@
 		</script>
 	</head>
 	<body ng-app="gantt" ng-controller="planner">
-		<div style="width : 100%; overflow-x : auto;">
-			<table style="width : 100%; border : 1px solid #000000;">
-				<tbody ng-if="years.length > 1">
-					<tr>
-						<td ng-repeat="year in years" style="text-align : center; border : 1px solid #000000;"
-						  colspan="{{yearDays[$index]}}"
-						>
-							{{year}}
-						</td>
-					</tr>
-				</tbody>
-				<tbody ng-if="keys(months).length > 1">
-					<tr>
-						<td ng-repeat="month in keys(months)" style="text-align : center; border : 1px solid #000000;"
-						  colspan="{{months[month].days}}"
-						>
-							{{monthName[months[month].index]}}
-						</td>
-					</tr>
-				</tbody>
-				<tbody>
-					<tr ng-if="keys(weeks).length > 1">
-						<td ng-repeat = "week in keys(weeks)" style="text-align : center; border : 1px solid #000000;"
-						  colspan="{{weeks[week].days}}"
-						>
-							{{weeks[week].name}}
-						</td>
-					</tr>
-					<tr>
-						<td ng-repeat="day in days">
-							<div style="border : 1px solid #000000; text-align : right; width : 50px;">
-								{{weekDay[day.weekDay]}}
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<td ng-repeat="day in days">
-							<div style="border : 1px solid #000000; text-align : right; width : 50px;">
-								{{day.day}}
-							</div>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
+		<table class="table" style="width : 100%;">
+			<tbody>
+				<tr>
+					<td style="width : 30%; vertical-align : top;">
+						<table class="table" style="width : 100%;">
+							<tbody>
+								<tr ng-if="years.length > 1">
+									<td style="text-align : left;" class="table">
+										Año
+									</td>
+								</tr>
+								<tr ng-if="keys(months).length > 1">
+									<td style="text-align : left;" class="table">
+										Mes
+									</td>
+								</tr>
+								<tr ng-if="keys(weeks).length > 1">
+									<td style="text-align : left;" class="table">
+										Semana
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align : left;" class="table">
+										DíaDelAño
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align : left;" class="table">
+										DíaDelProyecto
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align : left;" class="table">
+										Día
+									</td>
+								</tr>
+								<tr>
+									<td class="table">&nbsp;</td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+					<td style="max-width : 0; overflow-x : auto;">
+						<!--<div style="width : 100%; overflow-x : auto;">-->
+							<table class="table">
+								<tbody ng-if="years.length > 1">
+									<tr>
+										<td ng-repeat="year in years" class="table" colspan="{{yearDays[$index]}}">
+											{{year}}
+										</td>
+									</tr>
+								</tbody>
+								<tbody ng-if="keys(months).length > 1">
+									<tr>
+										<td ng-repeat="month in keys(months)" colspan="{{months[month].days}}" style="text-align : center;"
+										  class="table"
+										>
+											{{monthName[months[month].index]}}
+										</td>
+									</tr>
+								</tbody>
+								<tbody>
+									<tr ng-if="keys(weeks).length > 1">
+										<td ng-repeat = "week in keys(weeks)" colspan="{{weeks[week].days}}" style="text-align : center;"
+										  class="table"
+										>
+											{{weeks[week].name}}
+										</td>
+									</tr>
+									<tr>
+										<td ng-repeat="day in days">
+											<div class="table cell">
+												{{day.yearDay}}
+											</div>
+										</td>
+									</tr>
+									<tr>
+										<td ng-repeat="day in days">
+											<div class="table cell">
+												{{$index + 1}}
+											</div>
+										</td>
+									</tr>
+									<tr>
+										<td ng-repeat="day in days">
+											<div class="table cell" style="text-align : left;">
+												{{weekDay[day.weekDay]}}
+											</div>
+										</td>
+									</tr>
+									<tr>
+										<td ng-repeat="day in days">
+											<div class="table cell">
+												{{day.day}}
+											</div>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						<!--</div>-->
+					</td>
+				</tr>
+			</tbody>
+		</table>
 	</body>
 </html>
