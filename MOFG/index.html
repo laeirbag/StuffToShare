@@ -16,7 +16,7 @@
 
 			td
 			{
-				-webkit-user-select: none; /* Safari */        
+				-webkit-user-select: none; /* Safari */
 				-moz-user-select: none; /* Firefox */
 				-ms-user-select: none; /* IE10+/Edge */
 				user-select: none; /* Standard */
@@ -80,14 +80,17 @@
 							};
 						};
 
-						function getTaskStuff(task, movable)
+						function getTaskStuff(task, level, parent)
 						{
 							return{
 								name : task.name,
 								start : task.start,
 								end : task.end,
 								progress : task.progress,
-								movable : movable
+								level : level,
+								movable : level == 4,
+								expanded : true,
+								parent : parent
 							};
 						};
 
@@ -160,6 +163,11 @@
 							var monthDay;
 							var dayStuff;
 							var yearIndex = -1;
+							var root = null;
+							var root0 = null;
+							var root1 = null;
+							var root2 = null;
+							var taskIndex = -1;
 
 							$scope.days = [];
 							$scope.weeks = {};
@@ -247,25 +255,40 @@
 
 							for(i = 0, batches = tree.length; i < batches; i++)
 							{
-								$scope.tasks.push(getTaskStuff(tree[i], false));
+								if(i > 0)
+								{
+									root = 0;
+								}
+
+								$scope.tasks.push(getTaskStuff(tree[i], 1, root));
+								taskIndex++;
 
 								if(tree[i].parts)
 								{
+									root0 = taskIndex;
+
 									for(j = 0, subBatches = tree[i].parts.length; j < subBatches; j++)
 									{
-										$scope.tasks.push(getTaskStuff(tree[i].parts[j], false));
+										$scope.tasks.push(getTaskStuff(tree[i].parts[j], 2, root0));
+										taskIndex++;
 
 										if(tree[i].parts[j].parts)
 										{
+											root1 = taskIndex;
+
 											for(k = 0, concepts = tree[i].parts[j].parts.length; k < concepts; k++)
 											{
-												$scope.tasks.push(getTaskStuff(tree[i].parts[j].parts[k], false));
+												$scope.tasks.push(getTaskStuff(tree[i].parts[j].parts[k], 3, root1));
+												taskIndex++;
 
 												if(tree[i].parts[j].parts[k].parts)
 												{
+													root2 = taskIndex;
+
 													for(l = 0, estimatedConcepts = tree[i].parts[j].parts[k].parts.length; l < estimatedConcepts; l++)
 													{
-														$scope.tasks.push(getTaskStuff(tree[i].parts[j].parts[k].parts[l], true));
+														$scope.tasks.push(getTaskStuff(tree[i].parts[j].parts[k].parts[l], 4, root2));
+														taskIndex++;
 													}
 												}
 											}
@@ -273,6 +296,8 @@
 									}
 								}
 							}
+
+							$scope.tasks[0].level = 0;
 
 							start = new Date($scope.tasks[0].start + "T23:59:00.000Z");
 							yearStart = new Date(start);
@@ -344,6 +369,50 @@
 							}
 						};
 
+						$scope.toggle = function(index)
+						{
+							$scope.tasks[index].expanded = !$scope.tasks[index].expanded;
+						};
+
+						$scope.taskDisplayed = function(task)
+						{
+							return task.parent == null
+								||
+								(
+									(
+										(task.level == 1 && $scope.tasks[0].expanded)
+											||
+										(task.level == 2 && ($scope.tasks[0].expanded && $scope.tasks[$scope.tasks[task.parent].parent].expanded))
+									)
+										||
+									(
+										(
+											task.level == 3
+												&&
+											(
+												($scope.tasks[0].expanded && $scope.tasks[$scope.tasks[task.parent].parent].expanded)
+													&&
+												$scope.tasks[$scope.tasks[$scope.tasks[task.parent].parent].parent].expanded
+											)
+										)
+											||
+										(
+											task.level == 4
+												&&
+											(
+												($scope.tasks[0].expanded && $scope.tasks[$scope.tasks[task.parent].parent].expanded)
+													&&
+												(
+													$scope.tasks[$scope.tasks[$scope.tasks[task.parent].parent].parent].expanded
+														&&
+													$scope.tasks[$scope.tasks[$scope.tasks[$scope.tasks[task.parent].parent].parent].parent].expanded
+												)
+											)
+										)
+									)
+								)
+						};
+
 						init();
 					}
 				);
@@ -389,8 +458,17 @@
 								<tr>
 									<td class="table">&nbsp;</td>
 								</tr>
-								<tr ng-repeat="task in tasks">
-									<td class="table" style="text-align : left;" unselectable="on">
+								<tr ng-repeat="task in tasks" ng-show="taskDisplayed(task)">
+									<td style="text-align : left;" unselectable="on" ng-click="task.level < 4 && toggle($index)"
+									  class="table"
+									>
+										<span ng-if="task.level > 0">&nbsp;</span>
+										<span ng-if="task.level > 1">&nbsp;</span>
+										<span ng-if="task.level > 2">&nbsp;</span>
+										<span ng-if="task.level > 3">&nbsp;&nbsp;</span>
+										<span ng-if="task.level < 4">
+											{{task.expanded ? "-" : "+"}}
+										</span>
 										{{task.name}}
 									</td>
 								</tr>
@@ -452,7 +530,7 @@
 											</div>
 										</td>
 									</tr>
-									<tr ng-repeat="task in tasks">
+									<tr ng-repeat="task in tasks" ng-show="taskDisplayed(task)">
 										<td ng-repeat="day in days">
 											<div class="table cell" unselectable="on">
 												&nbsp;

@@ -16,7 +16,7 @@
 
 			td
 			{
-				-webkit-user-select: none; /* Safari */        
+				-webkit-user-select: none; /* Safari */
 				-moz-user-select: none; /* Firefox */
 				-ms-user-select: none; /* IE10+/Edge */
 				user-select: none; /* Standard */
@@ -80,14 +80,16 @@
 							};
 						};
 
-						function getTaskStuff(task, movable)
+						function getTaskStuff(task, level)
 						{
 							return{
 								name : task.name,
 								start : task.start,
 								end : task.end,
 								progress : task.progress,
-								movable : movable
+								level : level,
+								movable : level == 4,
+								expanded : true
 							};
 						};
 
@@ -247,25 +249,25 @@
 
 							for(i = 0, batches = tree.length; i < batches; i++)
 							{
-								$scope.tasks.push(getTaskStuff(tree[i], false));
+								$scope.tasks.push(getTaskStuff(tree[i], 1));
 
 								if(tree[i].parts)
 								{
 									for(j = 0, subBatches = tree[i].parts.length; j < subBatches; j++)
 									{
-										$scope.tasks.push(getTaskStuff(tree[i].parts[j], false));
+										$scope.tasks.push(getTaskStuff(tree[i].parts[j], 2));
 
 										if(tree[i].parts[j].parts)
 										{
 											for(k = 0, concepts = tree[i].parts[j].parts.length; k < concepts; k++)
 											{
-												$scope.tasks.push(getTaskStuff(tree[i].parts[j].parts[k], false));
+												$scope.tasks.push(getTaskStuff(tree[i].parts[j].parts[k], 3));
 
 												if(tree[i].parts[j].parts[k].parts)
 												{
 													for(l = 0, estimatedConcepts = tree[i].parts[j].parts[k].parts.length; l < estimatedConcepts; l++)
 													{
-														$scope.tasks.push(getTaskStuff(tree[i].parts[j].parts[k].parts[l], true));
+														$scope.tasks.push(getTaskStuff(tree[i].parts[j].parts[k].parts[l], 4));
 													}
 												}
 											}
@@ -273,6 +275,8 @@
 									}
 								}
 							}
+
+							$scope.tasks[0].level = 0;
 
 							start = new Date($scope.tasks[0].start + "T23:59:00.000Z");
 							yearStart = new Date(start);
@@ -391,6 +395,11 @@
 								</tr>
 								<tr ng-repeat="task in tasks">
 									<td class="table" style="text-align : left;" unselectable="on">
+										<span ng-if="task.level > 0">&nbsp;</span>
+										<span ng-if="task.level > 1">&nbsp;</span>
+										<span ng-if="task.level > 2">&nbsp;</span>
+										<span ng-if="task.level > 3">&nbsp;&nbsp;</span>
+										<span ng-if="task.level < 4">+</span>
 										{{task.name}}
 									</td>
 								</tr>
