@@ -382,7 +382,19 @@
 									(
 										(task.level == 1 && $scope.tasks[0].expanded)
 											||
-										(task.level == 2 && ($scope.tasks[0].expanded && $scope.tasks[$scope.tasks[task.parent].parent].expanded))
+										(
+											task.level == 2
+												&&
+											(
+												$scope.tasks[0].expanded
+													&&
+												(
+													$scope.tasks[task.parent].expanded
+														&&
+													$scope.tasks[$scope.tasks[task.parent].parent].expanded
+												)
+											)
+										)
 									)
 										||
 									(
@@ -390,9 +402,17 @@
 											task.level == 3
 												&&
 											(
-												($scope.tasks[0].expanded && $scope.tasks[$scope.tasks[task.parent].parent].expanded)
+												$scope.tasks[0].expanded
 													&&
-												$scope.tasks[$scope.tasks[$scope.tasks[task.parent].parent].parent].expanded
+												(
+													$scope.tasks[task.parent].expanded
+														&&
+													(
+														$scope.tasks[$scope.tasks[task.parent].parent].expanded
+															&&
+														$scope.tasks[$scope.tasks[$scope.tasks[task.parent].parent].parent].expanded
+													)
+												)
 											)
 										)
 											||
@@ -400,12 +420,20 @@
 											task.level == 4
 												&&
 											(
-												($scope.tasks[0].expanded && $scope.tasks[$scope.tasks[task.parent].parent].expanded)
+												$scope.tasks[0].expanded
 													&&
 												(
-													$scope.tasks[$scope.tasks[$scope.tasks[task.parent].parent].parent].expanded
+													$scope.tasks[task.parent].expanded
 														&&
-													$scope.tasks[$scope.tasks[$scope.tasks[$scope.tasks[task.parent].parent].parent].parent].expanded
+													(
+														$scope.tasks[$scope.tasks[task.parent].parent].expanded
+															&&
+														(
+															$scope.tasks[$scope.tasks[$scope.tasks[task.parent].parent].parent].expanded
+																&&
+															$scope.tasks[$scope.tasks[$scope.tasks[$scope.tasks[task.parent].parent].parent].parent].expanded
+														)
+													)
 												)
 											)
 										)
@@ -469,7 +497,7 @@
 										<span ng-if="task.level < 4">
 											{{task.expanded ? "-" : "+"}}
 										</span>
-										{{task.name}}
+										{{task.name}}_{{task.expanded}}_L{{task.level}}_{{task.parent}}
 									</td>
 								</tr>
 							</tbody>
