@@ -14,12 +14,22 @@
 				width : 50px;
 			}
 
-			td
+			.gantt td
 			{
 				-webkit-user-select: none; /* Safari */
 				-moz-user-select: none; /* Firefox */
 				-ms-user-select: none; /* IE10+/Edge */
 				user-select: none; /* Standard */
+			}
+
+			.task
+			{
+				background-color : #045162;
+			}
+
+			.taskSelected
+			{
+				background-color : #01995F;
 			}
 		</style>
 		<script src = "angular-1.7.8/angular.js"></script>
@@ -97,27 +107,20 @@
 						function getDayStuff(day, weekDay, yearDay)
 						{
 							var monthStuff = day.getMonth() + 1;
+							var code = JSON.stringify(day).replace("\"", "").split("T")[0];
+							var splitCode = code.split("-");
 
 							var dayStuff=
 							{
+								code : code,
 								day : day.getDate(),
-								dayCode : day.getDate(),
+								dayCode : splitCode[2],
 								month : day.getMonth(),
-								monthCode : monthStuff,
-								year : JSON.stringify(day).replace("\"", "").split("T")[0].split("-")[0],
+								monthCode : splitCode[1],
+								year : splitCode[0],
 								weekDay : weekDay,
 								yearDay : yearDay
 							};
-
-							if(dayStuff.dayCode < 10)
-							{
-								dayStuff.dayCode = "0" + dayStuff.dayCode;
-							}
-
-							if(dayStuff.monthCode < 10)
-							{
-								dayStuff.monthCode = "0" + dayStuff.monthCode;
-							}
 
 							return dayStuff;
 						};
@@ -176,6 +179,13 @@
 							$scope.yearDays = [];
 							$scope.tasks = [];
 							$scope.keys = Object.keys;
+							$scope.selectedTask = null;
+							$scope.taskClass=
+							[
+								"",
+								"task",
+								"taskSelected"
+							];
 
 							$scope.weekDay=
 							[
@@ -243,7 +253,8 @@
 															name : "Estimated Concept 1",
 															start : "2019-06-05",
 															end : "2019-06-10",
-															progress : 37
+															progress : 37,
+															selecteble : true
 														}
 													]
 												}
@@ -374,6 +385,18 @@
 							$scope.tasks[index].expanded = !$scope.tasks[index].expanded;
 						};
 
+						$scope.selectTask = function(index)
+						{
+							$scope.selectedTask = index;
+							console.log(index,"selected");
+						};
+
+						$scope.unselectTask = function()
+						{
+							console.log($scope.selectedTask,"unselected");
+							$scope.selectedTask = null;
+						};
+
 						$scope.taskDisplayed = function(task)
 						{
 							return task.parent == null
@@ -447,7 +470,7 @@
 		</script>
 	</head>
 	<body ng-app="gantt" ng-controller="planner">
-		<table class="table" style="width : 100%;">
+		<table class="gantt table" style="width : 100%;">
 			<tbody>
 				<tr>
 					<td style="width : 30%; vertical-align : top;">
@@ -497,77 +520,80 @@
 										<span ng-if="task.level < 4">
 											{{task.expanded ? "-" : "+"}}
 										</span>
-										{{task.name}}_{{task.expanded}}_L{{task.level}}_{{task.parent}}
+										{{task.name}}
 									</td>
 								</tr>
 							</tbody>
 						</table>
 					</td>
 					<td style="max-width : 0; overflow-x : auto; vertical-align : top;">
-						<!--<div style="width : 100%; overflow-x : auto;">-->
-							<table class="table">
-								<tbody ng-if="years.length > 1">
-									<tr>
-										<td ng-repeat="year in years" class="table" colspan="{{yearDays[$index]}}" unselectable="on">
-											{{year}}
-										</td>
-									</tr>
-								</tbody>
-								<tbody ng-if="keys(months).length > 1">
-									<tr>
-										<td ng-repeat="month in keys(months)" colspan="{{months[month].days}}" style="text-align : center;"
-										  class="table" unselectable="on"
+						<table class="table">
+							<tbody ng-if="years.length > 1">
+								<tr>
+									<td ng-repeat="year in years" class="table" colspan="{{yearDays[$index]}}" unselectable="on">
+										{{year}}
+									</td>
+								</tr>
+							</tbody>
+							<tbody ng-if="keys(months).length > 1">
+								<tr>
+									<td ng-repeat="month in keys(months)" colspan="{{months[month].days}}" style="text-align : center;"
+									  class="table" unselectable="on"
+									>
+										{{monthName[months[month].index]}}
+									</td>
+								</tr>
+							</tbody>
+							<tbody>
+								<tr ng-if="keys(weeks).length > 1">
+									<td ng-repeat = "week in keys(weeks)" colspan="{{weeks[week].days}}" style="text-align : center;"
+									  class="table" unselectable="on"
+									>
+										{{weeks[week].name}}
+									</td>
+								</tr>
+								<tr>
+									<td ng-repeat="day in days">
+										<div class="table cell" unselectable="on">
+											{{day.yearDay}}
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td ng-repeat="day in days">
+										<div class="table cell" unselectable="on">
+											{{$index + 1}}
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td ng-repeat="day in days">
+										<div class="table cell" style="text-align : left;" unselectable="on">
+											{{weekDay[day.weekDay]}}
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td ng-repeat="day in days">
+										<div class="table cell" unselectable="on">
+											{{day.day}}
+										</div>
+									</td>
+								</tr>
+								<tr ng-repeat="task in tasks" ng-show="taskDisplayed(task)">
+									<td ng-repeat="day in days">
+										<div ng-class="taskClass[ (day.code >= task.start && day.code <= task.end) && ((+(day.code >= task.start && day.code <= task.end)) + (+(selectedTask == $parent.$index))) ]"
+										  ng-mousedown="!task.selectable && selectTask($parent.$index)"
+										  ng-mouseup="unselectTask()"
 										>
-											{{monthName[months[month].index]}}
-										</td>
-									</tr>
-								</tbody>
-								<tbody>
-									<tr ng-if="keys(weeks).length > 1">
-										<td ng-repeat = "week in keys(weeks)" colspan="{{weeks[week].days}}" style="text-align : center;"
-										  class="table" unselectable="on"
-										>
-											{{weeks[week].name}}
-										</td>
-									</tr>
-									<tr>
-										<td ng-repeat="day in days">
-											<div class="table cell" unselectable="on">
-												{{day.yearDay}}
-											</div>
-										</td>
-									</tr>
-									<tr>
-										<td ng-repeat="day in days">
-											<div class="table cell" unselectable="on">
-												{{$index + 1}}
-											</div>
-										</td>
-									</tr>
-									<tr>
-										<td ng-repeat="day in days">
-											<div class="table cell" style="text-align : left;" unselectable="on">
-												{{weekDay[day.weekDay]}}
-											</div>
-										</td>
-									</tr>
-									<tr>
-										<td ng-repeat="day in days">
-											<div class="table cell" unselectable="on">
-												{{day.day}}
-											</div>
-										</td>
-									</tr>
-									<tr ng-repeat="task in tasks" ng-show="taskDisplayed(task)">
-										<td ng-repeat="day in days">
 											<div class="table cell" unselectable="on">
 												&nbsp;
 											</div>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						<!--</div>-->
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
 					</td>
 				</tr>
 			</tbody>
