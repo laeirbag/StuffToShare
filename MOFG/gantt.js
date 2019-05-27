@@ -5,6 +5,11 @@ angular
 		"planner",
 		function($scope, $timeout)
 		{
+			$scope.formatDate =  function(date)
+			{
+				return JSON.stringify(date).replace("\"", "").split("T")[0];
+			};
+
 			function yearWeek(dateData)
 			{
 				var date;
@@ -59,7 +64,15 @@ angular
 				return{
 					name : task.name,
 					start : task.start,
+					startDate : new Date(task.start),
 					end : task.end,
+					endDate : new Date(task.end),
+					dragStart : task.start,
+					dragStartDate : new Date(task.start),
+					currentDragStartDate : new Date(task.start),
+					dragEnd : task.end,
+					dragEndDate : new Date(task.end),
+					currentDragEndDate : new Date(task.end),
 					progress : task.progress,
 					level : level,
 					movable : level == 4,
@@ -72,11 +85,12 @@ angular
 			function getDayStuff(day, weekDay, yearDay)
 			{
 				var monthStuff = day.getMonth() + 1;
-				var code = JSON.stringify(day).replace("\"", "").split("T")[0];
+				var code = $scope.formatDate(day);
 				var splitCode = code.split("-");
 
 				var dayStuff=
 				{
+					date : new Date(day),
 					code : code,
 					day : day.getDate(),
 					dayCode : splitCode[2],
@@ -146,6 +160,7 @@ angular
 				$scope.mouseDown = false;
 				$scope.keys = Object.keys;
 				$scope.selectedTask = null;
+				$scope.selectedDay = null;
 
 				$scope.taskClass=
 				[
@@ -278,15 +293,15 @@ angular
 
 				$scope.tasks[0].level = 0;
 
-				start = new Date($scope.tasks[0].start + "T23:59:00.000Z");
+				start = new Date($scope.tasks[0].start + "T20:00:00.000Z");
 				yearStart = new Date(start);
 				yearStart.setDate(1);
 				yearStart.setMonth(0);
 				yearDay = Math.ceil(Math.abs(start.getTime() - yearStart.getTime()) / 86400000) + 1;
 				day = new Date(start);
-				end = new Date($scope.tasks[0].end + "T23:59:00.000Z");
-				startTimestamp = JSON.stringify(start);
-				endTimestamp = JSON.stringify(end);
+				end = new Date($scope.tasks[0].end + "T20:00:00.000Z");
+				startTimestamp = $scope.formatDate(start);
+				endTimestamp = $scope.formatDate(end);
 
 				weekDay = day.getDay();
 				dayStuff = getDayStuff(day, weekDay, yearDay);
@@ -302,7 +317,7 @@ angular
 				yearIndex++;
 				$scope.yearDays[yearIndex] = 1;
 
-				while(JSON.stringify(day).split("T")[0] != endTimestamp.split("T")[0])
+				while($scope.formatDate(day) != endTimestamp)
 				{
 					day.setDate(day.getDate() + 1);
 					weekDay = day.getDay();
@@ -353,27 +368,53 @@ angular
 				$scope.tasks[index].expanded = !$scope.tasks[index].expanded;
 			};
 
-			$scope.selectTask = function(index)
+			$scope.selectTask = function(index, day)
 			{
 				$scope.selectedTask = index;
-				//console.log(index,"selected");
+				$scope.selectedDay = day;
 			};
 
 			$scope.unselectTask = function()
 			{
 				if($scope.selectedTask)
 				{
-					//console.log($scope.selectedTask,"unselected");
+					$scope.tasks[$scope.selectedTask].currentDragStartDate= new Date($scope.tasks[$scope.selectedTask].dragStartDate);
+					$scope.tasks[$scope.selectedTask].currentDragEndDate = new Date($scope.tasks[$scope.selectedTask].dragEndDate);
+
 					$scope.selectedTask = null;
+					$scope.selectedDay = null;
 				}
 			};
 
-			$scope.updateTaskInteractiveState =  function(event)
+			$scope.updateTaskInteractiveState =  function(taskIndex, day)
 			{
-				if(!$scope.mouseDown && $scope.selectedTask)
+				if(!$scope.mouseDown)
 				{
-					//console.log($scope.selectedTask,"unselected");
-					$scope.selectedTask = null;
+					if($scope.selectedTask)
+					{
+						//console.log($scope.selectedTask,"unselected");
+						$scope.tasks[$scope.selectedTask].currentDragStartDate= new Date($scope.tasks[$scope.selectedTask].dragStartDate);
+						$scope.tasks[$scope.selectedTask].currentDragEndDate = new Date($scope.tasks[$scope.selectedTask].dragEndDate);
+
+						$scope.selectedTask = null;
+						$scope.selectedDay = null;
+					}
+				}
+				else
+				{
+					if($scope.selectedTask)
+					{
+						if($scope.selectedDay.code!= day.code)
+						{
+							var dayDiff = Math.ceil(($scope.selectedDay.date.getTime() - day.date.getTime()) / 86400000);
+
+							$scope.tasks[$scope.selectedTask].dragStartDate.setDate($scope.tasks[$scope.selectedTask].currentDragStartDate.getDate() - dayDiff);
+							$scope.tasks[$scope.selectedTask].dragEndDate.setDate($scope.tasks[$scope.selectedTask].currentDragEndDate.getDate() - dayDiff);
+
+							$scope.tasks[$scope.selectedTask].dragStart = $scope.formatDate($scope.tasks[$scope.selectedTask].dragStartDate);
+							$scope.tasks[$scope.selectedTask].dragEnd = $scope.formatDate($scope.tasks[$scope.selectedTask].dragEndDate);
+						}
+					}
 				}
 			};
 
