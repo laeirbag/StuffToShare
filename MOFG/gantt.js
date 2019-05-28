@@ -404,16 +404,15 @@ angular
 				{
 					if($scope.selectedTask)
 					{
-						if($scope.selectedDay.code!= day.code)
-						{
-							var dayDiff = Math.ceil(($scope.selectedDay.date.getTime() - day.date.getTime()) / 86400000);
+						$scope.dayDiff = Math.ceil(($scope.selectedDay.date.getTime() - day.date.getTime()) / 86400000);
 
-							$scope.tasks[$scope.selectedTask].dragStartDate.setDate($scope.tasks[$scope.selectedTask].currentDragStartDate.getDate() - dayDiff);
-							$scope.tasks[$scope.selectedTask].dragEndDate.setDate($scope.tasks[$scope.selectedTask].currentDragEndDate.getDate() - dayDiff);
+						var dayDiff = $scope.dayDiff;
 
-							$scope.tasks[$scope.selectedTask].dragStart = $scope.formatDate($scope.tasks[$scope.selectedTask].dragStartDate);
-							$scope.tasks[$scope.selectedTask].dragEnd = $scope.formatDate($scope.tasks[$scope.selectedTask].dragEndDate);
-						}
+						$scope.tasks[$scope.selectedTask].dragStartDate.setDate($scope.tasks[$scope.selectedTask].currentDragStartDate.getDate() - $scope.dayDiff);
+						$scope.tasks[$scope.selectedTask].dragEndDate.setDate($scope.tasks[$scope.selectedTask].currentDragEndDate.getDate() - $scope.dayDiff);
+
+						$scope.tasks[$scope.selectedTask].dragStart = $scope.formatDate($scope.tasks[$scope.selectedTask].dragStartDate);
+						$scope.tasks[$scope.selectedTask].dragEnd = $scope.formatDate($scope.tasks[$scope.selectedTask].dragEndDate);
 					}
 				}
 			};
