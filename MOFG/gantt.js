@@ -64,15 +64,15 @@ angular
 				return{
 					name : task.name,
 					start : task.start,
-					startDate : new Date(task.start),
+					startMoment : moment(task.start, "YYYY-MM-DD"),
 					end : task.end,
-					endDate : new Date(task.end),
+					endMoment : moment(task.end, "YYYY-MM-DD"),
 					dragStart : task.start,
-					dragStartDate : new Date(task.start),
-					currentDragStartDate : new Date(task.start),
+					dragStartMoment : moment(task.start, "YYYY-MM-DD"),
+					currentDragStartMoment : moment(task.start, "YYYY-MM-DD"),
 					dragEnd : task.end,
-					dragEndDate : new Date(task.end),
-					currentDragEndDate : new Date(task.end),
+					dragEndMoment : moment(task.end, "YYYY-MM-DD"),
+					currentDragEndMoment : moment(task.end, "YYYY-MM-DD"),
 					progress : task.progress,
 					level : level,
 					movable : level == 4,
@@ -90,7 +90,8 @@ angular
 
 				var dayStuff=
 				{
-					date : new Date(day),
+					dateData : new Date(day),
+					momentData : moment(code, "YYYY-MM-DD"),
 					code : code,
 					day : day.getDate(),
 					dayCode : splitCode[2],
@@ -378,8 +379,8 @@ angular
 			{
 				if($scope.selectedTask)
 				{
-					$scope.tasks[$scope.selectedTask].currentDragStartDate= new Date($scope.tasks[$scope.selectedTask].dragStartDate);
-					$scope.tasks[$scope.selectedTask].currentDragEndDate = new Date($scope.tasks[$scope.selectedTask].dragEndDate);
+					$scope.tasks[$scope.selectedTask].currentDragStartMoment= moment($scope.tasks[$scope.selectedTask].dragStartMoment.format("YYYY-MM-DD"), "YYYY-MM-DD");
+					$scope.tasks[$scope.selectedTask].currentDragEndMoment = moment($scope.tasks[$scope.selectedTask].dragEndMoment.format("YYYY-MM-DD"), "YYYY-MM-DD");
 
 					$scope.selectedTask = null;
 					$scope.selectedDay = null;
@@ -393,8 +394,8 @@ angular
 					if($scope.selectedTask)
 					{
 						//console.log($scope.selectedTask,"unselected");
-						$scope.tasks[$scope.selectedTask].currentDragStartDate= new Date($scope.tasks[$scope.selectedTask].dragStartDate);
-						$scope.tasks[$scope.selectedTask].currentDragEndDate = new Date($scope.tasks[$scope.selectedTask].dragEndDate);
+						$scope.tasks[$scope.selectedTask].currentDragStartMoment = moment($scope.tasks[$scope.selectedTask].dragStartMoment.format("YYYY-MM-DD"), "YYYY-MM-DD");
+						$scope.tasks[$scope.selectedTask].currentDragEndMoment = moment($scope.tasks[$scope.selectedTask].dragEndMoment.format("YYYY-MM-DD"), "YYYY-MM-DD");
 
 						$scope.selectedTask = null;
 						$scope.selectedDay = null;
@@ -404,15 +405,37 @@ angular
 				{
 					if($scope.selectedTask)
 					{
-						$scope.dayDiff = Math.ceil(($scope.selectedDay.date.getTime() - day.date.getTime()) / 86400000);
+						$scope.dayDiff = Math.ceil(($scope.selectedDay.dateData.getTime() - day.dateData.getTime()) / 86400000);
 
-						var dayDiff = $scope.dayDiff;
+						var dayDiff = Math.abs($scope.dayDiff);
 
-						$scope.tasks[$scope.selectedTask].dragStartDate.setDate($scope.tasks[$scope.selectedTask].currentDragStartDate.getDate() - $scope.dayDiff);
-						$scope.tasks[$scope.selectedTask].dragEndDate.setDate($scope.tasks[$scope.selectedTask].currentDragEndDate.getDate() - $scope.dayDiff);
+						var newStart;
+						var newEnd;
 
-						$scope.tasks[$scope.selectedTask].dragStart = $scope.formatDate($scope.tasks[$scope.selectedTask].dragStartDate);
-						$scope.tasks[$scope.selectedTask].dragEnd = $scope.formatDate($scope.tasks[$scope.selectedTask].dragEndDate);
+						if($scope.dayDiff < 0)
+						{
+							newStart = moment($scope.tasks[$scope.selectedTask].currentDragStartMoment.add(dayDiff, "days").format("YYYY-MM-DD"), "YYYY-MM-DD");
+							newEnd = moment($scope.tasks[$scope.selectedTask].currentDragEndMoment.add(dayDiff, "days").format("YYYY-MM-DD"), "YYYY-MM-DD");
+						}
+						else
+						{
+							if($scope.dayDiff > 0)
+							{
+								newStart = moment($scope.tasks[$scope.selectedTask].currentDragStartMoment.subtract(dayDiff, "days").format("YYYY-MM-DD"), "YYYY-MM-DD");
+								newEnd = moment($scope.tasks[$scope.selectedTask].currentDragEndMoment.subtract(dayDiff, "days").format("YYYY-MM-DD"), "YYYY-MM-DD");
+							}
+							else
+							{
+								newStart = moment($scope.tasks[$scope.selectedTask].dragStartMoment.format("YYYY-MM-DD"), "YYYY-MM-DD");
+								newEnd = moment($scope.tasks[$scope.selectedTask].dragEndMoment.format("YYYY-MM-DD"), "YYYY-MM-DD");
+							}
+						}
+
+						$scope.tasks[$scope.selectedTask].dragStartDate = moment(newStart.format("YYYY-MM-DD"), "YYYY-MM-DD");
+						$scope.tasks[$scope.selectedTask].dragEndDate = moment(newEnd.format("YYYY-MM-DD"), "YYYY-MM-DD");
+
+						$scope.tasks[$scope.selectedTask].dragStart = $scope.tasks[$scope.selectedTask].dragStartDate.format("YYYY-MM-DD");
+						$scope.tasks[$scope.selectedTask].dragEnd = $scope.tasks[$scope.selectedTask].dragEndDate.format("YYYY-MM-DD");
 					}
 				}
 			};

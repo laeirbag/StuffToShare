@@ -3,6 +3,7 @@
 	<head>
 		<title>MOFG</title>
 		<link rel="stylesheet" href="style.css">
+		<script src = "moment.js"></script>
 		<script src = "angular-1.7.8/angular.js"></script>
 		<script src="gantt.js"></script>
 	</head>
@@ -58,8 +59,7 @@
 											{{task.expanded ? "-" : "+"}}
 										</span>
 										{{task.name}}
-										<!--<span ng-if="task.selectable">{{task.dragStart}}-{{task.dragEnd}}</span>-->
-										<span ng-if="task.selectable">{{dayDiff}}</span>
+										<span ng-if="task.selectable">{{task.dragStartDate}}</span>
 									</td>
 								</tr>
 							</tbody>
