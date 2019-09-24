@@ -1,0 +1,81 @@
+<!DOCTYPE>
+<html>
+	<head>
+		<title>MOFG</title>
+		<link rel="stylesheet" href="style.css">
+		<script src = "moment.js"></script>
+		<script src = "moment.js"></script>
+		<script src = "angular-1.7.8/angular.js"></script>
+		<script src="gantt.js"></script>
+	</head>
+	<body ng-app="gantt" ng-controller="planner">
+		<table class="gantt table" style="width : 100%;">
+			<tbody>
+				<tr>
+					<td style="width : 30%; vertical-align : top;">
+						<table class="table" style="width : 100%;">
+							<tbody>
+								<tr>
+									<td style="text-align : left;" class="table" unselectable="on">
+										N
+									</td>
+								</tr>
+								<tr>
+									<td class="table">&nbsp;</td>
+								</tr>
+								<tr ng-repeat="task in tasks" ng-show="taskDisplayed(task)">
+									<td style="text-align : left;" unselectable="on" ng-click="task.level < 4 && toggle($index)"
+									  class="table"
+									>
+										<span ng-if="task.level > 0">&nbsp;</span>
+										<span ng-if="task.level > 1">&nbsp;</span>
+										<span ng-if="task.level > 2">&nbsp;</span>
+										<span ng-if="task.level > 3">&nbsp;&nbsp;</span>
+										<span ng-if="task.level < 4">
+											{{task.expanded ? "-" : "+"}}
+										</span>
+										{{task.name}}
+										<span ng-if="task.selectable">{{task.dragStart}}</span>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+					<td style="max-width : 0; overflow-x : auto; vertical-align : top;">
+						<table class="table">
+							<tbody>
+								<tr>
+									<td ng-repeat="day in days">
+										<div class="table cell" style="text-align : left;" unselectable="on">
+											{{weekDay[day.weekDay]}}
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td ng-repeat="day in days">
+										<div class="table cell" unselectable="on">
+											{{day.day}}
+										</div>
+									</td>
+								</tr>
+								<tr ng-repeat="task in tasks" ng-show="taskDisplayed(task)">
+									<td ng-repeat="number in numbers">
+										<div ng-class="taskClass[ (day.code >= task.dragStart && day.code <= task.dragEnd) && ((+(day.code >= task.dragStart && day.code <= task.dragEnd)) + (+(selectedTask == $parent.$index))) ]"
+										  ng-mousedown="(task.selectable && (day.code >= task.dragStart && day.code <= task.dragEnd)) && selectTask($parent.$index, day)"
+										  ng-mouseup="unselectTask()"
+										  ng-mouseover="updateTaskInteractiveState($parent.index, day)"
+										>
+											<div class="table cell" unselectable="on">
+												&nbsp;
+											</div>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</body>
+</html>
