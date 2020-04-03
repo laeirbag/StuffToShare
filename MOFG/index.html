@@ -1,142 +1,132 @@
-<!DOCTYPE>
+<!DOCTYPE html>
 <html>
 	<head>
-		<title>MOFG</title>
-		<link rel="stylesheet" href="style.css">
-		<script src = "moment.js"></script>
-		<script src = "angular-1.7.8/angular.js"></script>
-		<script src="gantt.js"></script>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="bootstrap.css" rel="stylesheet">
+		<script src="angular.min.js"></script>
+		<style>
+			tr
+			{
+				-webkit-touch-callout : none;
+				-webkit-user-select   : none;
+				-khtml-user-select    : none;
+				-moz-user-select      : none;
+				-ms-user-select       : none;
+				user-select           : none;
+			}
+
+			.slot
+			{
+				border : 1px solid #000000;
+			}
+
+			.cell
+			{
+				width  : 75px;
+				height : 25px;
+			}
+
+			.number
+			{
+				text-align : right;
+			}
+
+			.task
+			{
+				background : #1166FF;
+			}
+		</style>
+		<script>
+			angular
+				.module("gantt",[])
+				.controller
+				(
+					"planning",
+					function($scope)
+					{
+						var start = 1;
+						var end   = 100;
+						$scope.dragPoint = null;
+
+						$scope.slots = [];
+
+						$scope.dragStart = function(index, point)
+						{
+							$scope.dragPoint = point;
+
+							$scope.tasks[index].drag=
+							{
+								start : $scope.tasks[index].current.start,
+								end   : $scope.tasks[index].current.end
+							};
+						};
+
+						$scope.dragEnd = function(point)
+						{
+							$scope.dragPoint = null;
+						};
+
+						$scope.tasks=
+						[{
+							name  : "Tarea",
+							original:
+							{
+								start : 27,
+								end   : 45
+							},
+							current:
+							{
+								start : 27,
+								end   : 45
+							}
+						}];
+
+						$scope.moveTask = function(index, point)
+						{
+							var diff = point - $scope.dragPoint;
+
+							$scope.tasks[index].current.start = $scope.tasks[index].drag.start + diff;
+							$scope.tasks[index].current.end   = $scope.tasks[index].drag.end   + diff;
+						};
+
+						for(let i = start; i <= end; i++)
+						{
+							$scope.slots.push(i);
+						}
+					}
+				);
+		</script>
 	</head>
-	<body ng-app="gantt" ng-controller="planner">
-		<table class="gantt table" style="width : 100%;">
-			<tbody>
-				<tr>
-					<td style="width : 30%; vertical-align : top;">
-						<table class="table" style="width : 100%;">
-							<tbody>
-								<tr ng-if="years.length > 1">
-									<td style="text-align : left;" class="table" unselectable="on">
-										Año
-									</td>
-								</tr>
-								<tr ng-if="keys(months).length > 1">
-									<td style="text-align : left;" class="table" unselectable="on">
-										Mes
-									</td>
-								</tr>
-								<tr ng-if="keys(weeks).length > 1">
-									<td style="text-align : left;" class="table" unselectable="on">
-										Semana
-									</td>
-								</tr>
-								<tr>
-									<td style="text-align : left;" class="table" unselectable="on">
-										DíaDelAño
-									</td>
-								</tr>
-								<tr>
-									<td style="text-align : left;" class="table" unselectable="on">
-										DíaDelProyecto
-									</td>
-								</tr>
-								<tr>
-									<td style="text-align : left;" class="table" unselectable="on">
-										Día
-									</td>
-								</tr>
-								<tr>
-									<td class="table">&nbsp;</td>
-								</tr>
-								<tr ng-repeat="task in tasks" ng-show="taskDisplayed(task)">
-									<td style="text-align : left;" unselectable="on" ng-click="task.level < 4 && toggle($index)"
-									  class="table"
-									>
-										<span ng-if="task.level > 0">&nbsp;</span>
-										<span ng-if="task.level > 1">&nbsp;</span>
-										<span ng-if="task.level > 2">&nbsp;</span>
-										<span ng-if="task.level > 3">&nbsp;&nbsp;</span>
-										<span ng-if="task.level < 4">
-											{{task.expanded ? "-" : "+"}}
-										</span>
-										{{task.name}}
-										<span ng-if="task.selectable">{{task.dragStart}}</span>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</td>
-					<td style="max-width : 0; overflow-x : auto; vertical-align : top;">
-						<table class="table">
-							<tbody ng-if="years.length > 1">
-								<tr>
-									<td ng-repeat="year in years" class="table" colspan="{{yearDays[$index]}}" unselectable="on">
-										{{year}}
-									</td>
-								</tr>
-							</tbody>
-							<tbody ng-if="keys(months).length > 1">
-								<tr>
-									<td ng-repeat="month in keys(months)" colspan="{{months[month].days}}" style="text-align : center;"
-									  class="table" unselectable="on"
-									>
-										{{monthName[months[month].index]}}
-									</td>
-								</tr>
-							</tbody>
-							<tbody>
-								<tr ng-if="keys(weeks).length > 1">
-									<td ng-repeat = "week in keys(weeks)" colspan="{{weeks[week].days}}" style="text-align : center;"
-									  class="table" unselectable="on"
-									>
-										{{weeks[week].name}}
-									</td>
-								</tr>
-								<tr>
-									<td ng-repeat="day in days">
-										<div class="table cell" unselectable="on">
-											{{day.yearDay}}
-										</div>
-									</td>
-								</tr>
-								<tr>
-									<td ng-repeat="day in days">
-										<div class="table cell" unselectable="on">
-											{{$index + 1}}
-										</div>
-									</td>
-								</tr>
-								<tr>
-									<td ng-repeat="day in days">
-										<div class="table cell" style="text-align : left;" unselectable="on">
-											{{weekDay[day.weekDay]}}
-										</div>
-									</td>
-								</tr>
-								<tr>
-									<td ng-repeat="day in days">
-										<div class="table cell" unselectable="on">
-											{{day.day}}
-										</div>
-									</td>
-								</tr>
-								<tr ng-repeat="task in tasks" ng-show="taskDisplayed(task)">
-									<td ng-repeat="day in days">
-										<div ng-class="taskClass[ (day.code >= task.dragStart && day.code <= task.dragEnd) && ((+(day.code >= task.dragStart && day.code <= task.dragEnd)) + (+(selectedTask == $parent.$index))) ]"
-										  ng-mousedown="(task.selectable && (day.code >= task.dragStart && day.code <= task.dragEnd)) && selectTask($parent.$index, day)"
-										  ng-mouseup="unselectTask()"
-										  ng-mouseover="updateTaskInteractiveState($parent.index, day)"
-										>
-											<div class="table cell" unselectable="on">
-												&nbsp;
-											</div>
-										</div>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+	<body ng-app="gantt" ng-controller="planning">
+		<div>
+			<table>
+				<tbody>
+					<tr>
+						<th class="slot">
+							#
+						</th>
+						<th ng-repeat="slot in slots" class="slot">
+							<div class="number cell">
+								{{slot}}
+							</div>
+						</th>
+					</tr>
+					<tr ng-repeat="task in tasks">
+						<th class="slot">
+							{{task.name}}
+						</th>
+						<th ng-repeat="slot in slots" class="slot">
+							<div class="cell" ng-class="(slot >= task.current.start && slot <= task.current.end) && 'task'"
+							  ng-mousedown="dragStart($parent.$index, slot)" ng-mouseover="dragPoint && moveTask($parent.$index, slot)"
+							  ng-mouseup="dragEnd()"
+							>
+							</div>
+						</th>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	</body>
 </html>
