@@ -46,26 +46,29 @@
 					"planning",
 					function($scope)
 					{
-						var start = 1;
-						var end   = 100;
-						$scope.dragPoint = null;
+						var start            = 1;
+						var end              = 100;
+						$scope.dragPoint    = null;
+						$scope.currentTask = null;
 
 						$scope.slots = [];
 
 						$scope.dragStart = function(index, point)
 						{
-							$scope.dragPoint = point;
+							$scope.dragPoint   = point;
+							$scope.currentTask = $scope.tasks[index];
 
-							$scope.tasks[index].drag=
+							$scope.currentTask.drag=
 							{
-								start : $scope.tasks[index].current.start,
-								end   : $scope.tasks[index].current.end
+								start : $scope.currentTask.current.start,
+								end   : $scope.currentTask.current.end
 							};
 						};
 
 						$scope.dragEnd = function(point)
 						{
-							$scope.dragPoint = null;
+							$scope.dragPoint   = null;
+							$scope.currentRask = null;
 						};
 
 						$scope.tasks=
@@ -83,12 +86,14 @@
 							}
 						}];
 
-						$scope.moveTask = function(index, point)
+						$scope.moveTask = function(point)
 						{
-							var diff = point - $scope.dragPoint;
+							var diff                           = point - $scope.dragPoint;
+							$scope.currentTask.current.start=
+								$scope.currentTask.drag.start + diff;
 
-							$scope.tasks[index].current.start = $scope.tasks[index].drag.start + diff;
-							$scope.tasks[index].current.end   = $scope.tasks[index].drag.end   + diff;
+							$scope.currentTask.current.end=
+								$scope.currentTask.drag.end + diff;
 						};
 
 						for(let i = start; i <= end; i++)
@@ -108,7 +113,7 @@
 							#
 						</th>
 						<th ng-repeat="slot in slots" class="slot">
-							<div class="number cell">
+							<div class="number cell"  ng-mouseover="dragPoint && moveTask(slot)" ng-mouseup="dragEnd()">
 								{{slot}}
 							</div>
 						</th>
@@ -119,7 +124,7 @@
 						</th>
 						<th ng-repeat="slot in slots" class="slot">
 							<div class="cell" ng-class="(slot >= task.current.start && slot <= task.current.end) && 'task'"
-							  ng-mousedown="dragStart($parent.$index, slot)" ng-mouseover="dragPoint && moveTask($parent.$index, slot)"
+							  ng-mousedown="dragStart($parent.$index, slot)" ng-mouseover="dragPoint && moveTask(slot)"
 							  ng-mouseup="dragEnd()"
 							>
 							</div>
