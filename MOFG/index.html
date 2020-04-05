@@ -5,7 +5,10 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link href="bootstrap.css" rel="stylesheet">
-		<script src="angular.min.js"></script>
+		<script src="moment.js">
+		</script>
+		<script src="angular.min.js">
+		</script>
 		<style>
 			tr
 			{
@@ -46,92 +49,178 @@
 					"planning",
 					function($scope)
 					{
-						var start            = 1;
-						var end              = 100;
-						$scope.dragPoint    = null;
+						var start           = "2020-01-01";
+						var end             = "2020-12-31";
+						$scope.dragPoint   = null;
 						$scope.currentTask = null;
 
-						$scope.slots = [];
+						$scope.days = [];
 
 						$scope.dragStart = function(index, point)
 						{
-							$scope.dragPoint   = point;
+							$scope.dragPoint  = point;
 							$scope.currentTask = $scope.tasks[index];
 
 							$scope.currentTask.drag=
 							{
-								start : $scope.currentTask.current.start,
-								end   : $scope.currentTask.current.end
+								start : moment($scope.currentTask.current.start, "YYYY-MM-DD"),
+								end   : moment($scope.currentTask.current.end, "YYYY-MM-DD")
 							};
 						};
 
 						$scope.dragEnd = function(point)
 						{
-							$scope.dragPoint   = null;
-							$scope.currentRask = null;
+							$scope.dragPoint  = null;
+							$scope.currentTask = null;
 						};
 
 						$scope.tasks=
 						[{
 							name  : "Tarea",
+							start : "2020-04-02",
+							end   : "2020-07-22"
+						}];
+
+						let count = $scope.tasks.length;
+
+						var data;
+
+						for(let i = 0; i < count; i++)
+						{
+							$scope.tasks[i]=
+							{
+								name : $scope.tasks[i].name,
+								moment:
+								{
+									start : moment($scope.tasks[i].start, "YYYY-MM-DD"),
+									end   : moment($scope.tasks[i].end, "YYYY-MM-DD")
+								},
+								original:
+								{
+									start : $scope.tasks[i].start,
+									end   : $scope.tasks[i].end
+								},
+								current:
+								{
+									start : $scope.tasks[i].start,
+									end   : $scope.tasks[i].end
+								}
+							};
+						}
+
+						/*$scope.tasks=
+						[{
+							name  : "Tarea",
 							original:
 							{
-								start : 27,
-								end   : 45
+								start:
+								{
+									ref  : "2020-04-02",
+									date : moment("2020-04-02", "YYYY-MM-DD")
+								},
+								end:
+								{
+									ref  : "2020-07-22",
+									date : moment("2020-07-22", "YYYY-MM-DD")
+								}
 							},
 							current:
 							{
-								start : 27,
-								end   : 45
+								start:
+								{
+									ref  : "2020-04-02",
+									date : moment("2020-04-02", "YYYY-MM-DD")
+								},
+								end:
+								{
+									ref  : "2020-07-22",
+									date : moment("2020-07-22", "YYYY-MM-DD")
+								}
 							}
-						}];
+						}];*/
 
 						$scope.moveTask = function(point)
 						{
-							var diff                           = point - $scope.dragPoint;
-							$scope.currentTask.current.start=
-								$scope.currentTask.drag.start + diff;
+							var diff = point - $scope.dragPoint;
 
-							$scope.currentTask.current.end=
-								$scope.currentTask.drag.end + diff;
+							var drag=
+							{
+								start : moment($scope.currentTask.drag.start.format("YYYY-MM-DD"), "YYYY-MM-DD"),
+								end   : moment($scope.currentTask.drag.end.format("YYYY-MM-DD"), "YYYY-MM-DD")
+							};
+
+							if(diff >= 0)
+							{
+								drag.start.add(diff, "days");
+								drag.end.add(diff, "days");
+							}
+							else
+							{
+								drag.start.subtract(-diff, "days");
+								drag.end.subtract(-diff, "days");
+							}
+
+							$scope.currentTask.current.start = drag.start.format("YYYY-MM-DD");
+							$scope.currentTask.current.end   = drag.end.format("YYYY-MM-DD");
+							$scope.currentTask.moment.start  = moment($scope.currentTask.current.start, "YYYY-MM-DD");
+							$scope.currentTask.moment.end    = moment($scope.currentTask.current.end, "YYYY-MM-DD");
 						};
 
-						for(let i = start; i <= end; i++)
+						let day        = {ref : start};
+						let dayMoment = moment(start, "YYYY-MM-DD");
+
+						var data;
+
+						while(day.ref <= end)
 						{
-							$scope.slots.push(i);
+							data = day.ref.split("-");
+
+							$scope.days.push
+							({
+								ref : day.ref,
+								data:
+								{
+									year  : data[0],
+									month : data[1],
+									day   : data[2]
+								}
+							});
+
+							dayMoment.add(1,"days");
+							day.ref = dayMoment.format("YYYY-MM-DD");
 						}
+
+						//console.log($scope.tasks);
 					}
 				);
 		</script>
 	</head>
 	<body ng-app="gantt" ng-controller="planning">
-		<div>
-			<table>
-				<tbody>
-					<tr>
-						<th class="slot">
-							#
-						</th>
-						<th ng-repeat="slot in slots" class="slot">
-							<div class="number cell"  ng-mouseover="dragPoint && moveTask(slot)" ng-mouseup="dragEnd()">
-								{{slot}}
-							</div>
-						</th>
-					</tr>
-					<tr ng-repeat="task in tasks">
-						<th class="slot">
-							{{task.name}}
-						</th>
-						<th ng-repeat="slot in slots" class="slot">
-							<div class="cell" ng-class="(slot >= task.current.start && slot <= task.current.end) && 'task'"
-							  ng-mousedown="dragStart($parent.$index, slot)" ng-mouseover="dragPoint && moveTask(slot)"
-							  ng-mouseup="dragEnd()"
-							>
-							</div>
-						</th>
-					</tr>
-				</tbody>
-			</table>
-		</div>
+		<table>
+			<tbody>
+				<tr>
+					<th class="slot">
+						#
+					</th>
+					<th ng-repeat="day in days" class="slot">
+						<div class="number cell"  ng-mouseover="dragPoint && moveTask($index)" ng-mouseup="dragEnd()">
+							{{day.ref}}
+						</div>
+					</th>
+				</tr>
+				<tr ng-repeat="task in tasks">
+					<th class="slot">
+						{{task.name}}
+					</th>
+					<th ng-repeat="day in days" class="slot">
+						<div class="cell" ng-class="(day.ref >= task.current.start && day.ref <= task.current.end) && 'task'"
+						  ng-mousedown="dragStart($parent.$index, $index)" ng-mouseover="dragPoint && moveTask($index)"
+						  ng-mouseup="dragEnd()"
+						>
+						</div>
+					</th>
+				</tr>
+			</tbody>
+		</table>
 	</body>
 </html>
