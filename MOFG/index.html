@@ -5,10 +5,10 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link href="bootstrap.css" rel="stylesheet">
-		<script src="moment.js">
-		</script>
-		<script src="angular.min.js">
-		</script>
+		<script src="moment.js"></script>
+		<script src="hammer.min.js"></script>
+		<script src="angular.min.js"></script>
+		<script src="angular.hammer.js"></script>
 		<style>
 			tr
 			{
@@ -43,7 +43,7 @@
 		</style>
 		<script>
 			angular
-				.module("gantt",[])
+				.module("gantt", ["hmTouchEvents"])
 				.controller
 				(
 					"planning",
@@ -51,7 +51,8 @@
 					{
 						var start           = "2020-01-01";
 						var end             = "2020-12-31";
-						var currentDrag = null;
+						var currentDrag     = null;
+						$scope.currentTask  = null;
 
 						function init()
 						{
@@ -90,8 +91,8 @@
 
 							let day        = {ref : start};
 							let dayMoment = moment(start, "YYYY-MM-DD");
-
 							var data;
+							var i = 0;
 
 							while(day.ref <= end)
 							{
@@ -99,6 +100,7 @@
 
 								$scope.days.push
 								({
+									id  : i,
 									ref : day.ref,
 									data:
 									{
@@ -108,52 +110,64 @@
 									}
 								});
 
+								i++;
 								dayMoment.add(1,"days");
 								day.ref = dayMoment.format("YYYY-MM-DD");
 							}
 						};
 
-						$scope.dragStart = function(index, point)
+						var startPoint   = null;
+						var currentPoint = null;
+						var steps        = null;
+						var drag         = null;
+						var currentDrag  = null;
+
+						$scope.dragStart = function(index, event)
 						{
-							$scope.dragPoint   = point;
+							startPoint         = event.center.x;
+							currentPoint       = startPoint;
 							$scope.currentTask = $scope.tasks[index];
 
 							currentDrag=
 							{
 								start : moment($scope.currentTask.current.start, "YYYY-MM-DD"),
-								end   : moment($scope.currentTask.current.end, "YYYY-MM-DD")
+								end   : moment($scope.currentTask.current.end  , "YYYY-MM-DD")
 							};
 						};
 
-						$scope.dragEnd = function(point)
+						$scope.moveTask = function(event)
 						{
-							$scope.dragPoint  = null;
-							$scope.currentTask = null;
-						};
+							steps = Math.round((event.center.x - startPoint) / 75);
 
-						$scope.moveTask = function(point)
-						{
-							var diff = point - $scope.dragPoint;
+							if(steps == 0)
+							{
+								steps = 0;
+							}
 
-							var drag=
+							drag=
 							{
 								start : moment(currentDrag.start.format("YYYY-MM-DD"), "YYYY-MM-DD"),
-								end   : moment(currentDrag.end.format("YYYY-MM-DD"), "YYYY-MM-DD")
+								end   : moment(currentDrag.end.format  ("YYYY-MM-DD"), "YYYY-MM-DD")
 							};
 
-							if(diff >= 0)
+							if(steps >= 0)
 							{
-								drag.start.add(diff, "days");
-								drag.end.add(diff, "days");
+								drag.start.add(steps, "days");
+								drag.end.add  (steps, "days");
 							}
 							else
 							{
-								drag.start.subtract(-diff, "days");
-								drag.end.subtract(-diff, "days");
+								drag.start.subtract(-steps, "days");
+								drag.end.subtract  (-steps, "days");
 							}
 
 							$scope.currentTask.current.start = drag.start.format("YYYY-MM-DD");
 							$scope.currentTask.current.end   = drag.end.format("YYYY-MM-DD");
+						};
+
+						$scope.dragEnd = function()
+						{
+							$scope.currentTask = null;
 						};
 
 						init();
@@ -169,7 +183,7 @@
 						#
 					</th>
 					<th ng-repeat="day in days" class="slot">
-						<div class="number cell"  ng-mouseover="dragPoint && moveTask($index)" ng-mouseup="dragEnd()">
+						<div class="number cell">
 							{{day.ref}}
 						</div>
 					</th>
@@ -180,17 +194,10 @@
 					</th>
 					<th ng-repeat="day in days" class="slot">
 						<div class="cell" ng-class="(day.ref >= task.current.start && day.ref <= task.current.end) && 'task'"
-						  ng-mousedown="dragStart($parent.$index, $index)" ng-mouseover="dragPoint && moveTask($index)"
-						  ng-mouseup="dragEnd()"
+						  hm-panstart="currentTask == null && dragStart($parent.$index, $event)" hm-panleft="currentTask != null && moveTask($event);"
+						  hm-panright="currentTask != null && moveTask($event);"
+						  hm-panend="dragEnd()"
 						>
-						</div>
-					</th>
-				</tr>
-				<tr ng-repeat="task in tasks">
-					<th>
-					</th>
-					<th ng-repeat="day in days">
-						<div class="cell" ng-mouseover="dragPoint && moveTask($index)" ng-mouseup="dragEnd()">
 						</div>
 					</th>
 				</tr>
