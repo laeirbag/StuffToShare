@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="utf-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link href="bootstrap.css" rel="stylesheet">
-		<script src="moment.js"></script>
-		<script src="hammer.min.js"></script>
-		<script src="angular.min.js"></script>
+		<meta   charset="utf-8">
+		<meta   http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta   name="viewport"              content="width=device-width, initial-scale=1">
+		<link   href="bootstrap.css"         rel="stylesheet">
+		<script src="moment.js"        ></script>
+		<script src="hammer.min.js"    ></script>
+		<script src="angular.min.js"   ></script>
 		<script src="angular.hammer.js"></script>
 		<style>
 			tr
@@ -49,23 +49,25 @@
 					"planning",
 					function($scope)
 					{
-						var start           = "2020-01-01";
-						var end             = "2020-12-31";
-						var currentDrag     = null;
-						$scope.currentTask  = null;
+						var start          = "2020-01-01";
+						var end            = "2020-12-31";
+						var currentDrag    = null;
+						$scope.currentTask = null;
 
 						function init()
 						{
 							$scope.tasks=
 							[{
 								name  : "Tarea",
-								start : "2020-04-02",
-								end   : "2020-07-22"
+								//start : "2020-04-02",
+								//end   : "2020-07-22"
+								
+								start : "2020-04-01",
+								end   : "2020-04-01"
 							}];
 
 							$scope.dragPoint   = null;
-
-							$scope.days = [];
+							$scope.days        = [];
 
 							let count = $scope.tasks.length;
 
@@ -89,10 +91,10 @@
 								};
 							}
 
-							let day        = {ref : start};
+							let day       = {ref : start};
 							let dayMoment = moment(start, "YYYY-MM-DD");
+							var i         = 0;
 							var data;
-							var i = 0;
 
 							while(day.ref <= end)
 							{
@@ -112,6 +114,7 @@
 
 								i++;
 								dayMoment.add(1,"days");
+
 								day.ref = dayMoment.format("YYYY-MM-DD");
 							}
 						};
@@ -122,7 +125,7 @@
 						var drag         = null;
 						var currentDrag  = null;
 
-						$scope.dragStart = function(index, event)
+						$scope.dragBegin = function(index, event)
 						{
 							startPoint         = event.center.x;
 							currentPoint       = startPoint;
@@ -165,7 +168,7 @@
 							$scope.currentTask.current.end   = drag.end.format("YYYY-MM-DD");
 						};
 
-						$scope.dragEnd = function()
+						$scope.dragFinish = function()
 						{
 							$scope.currentTask = null;
 						};
@@ -194,10 +197,14 @@
 					</th>
 					<th ng-repeat="day in days" class="slot">
 						<div class="cell" ng-class="(day.ref >= task.current.start && day.ref <= task.current.end) && 'task'"
-						  hm-panstart="currentTask == null && dragStart($parent.$index, $event)" hm-panleft="currentTask != null && moveTask($event);"
+						  hm-panstart="currentTask == null && dragBegin($parent.$index, $event)" hm-panleft="currentTask != null && moveTask($event);"
 						  hm-panright="currentTask != null && moveTask($event);"
-						  hm-panend="dragEnd()"
+						  hm-panend="dragFinish()"
 						>
+							<div style="width : 33%; height : 100%; background : #C6C6C6; float : left;" ng-if="day.ref == task.current.start">
+							</div>
+							<div style="width : 33%; height : 100%; background : #C6C6C6; float : right;" ng-if="day.ref == task.current.end">
+							</div>
 						</div>
 					</th>
 				</tr>
