@@ -61,7 +61,7 @@
 								name  : "Tarea",
 								//start : "2020-04-02",
 								//end   : "2020-07-22"
-								
+
 								start : "2020-04-01",
 								end   : "2020-04-01"
 							}];
@@ -91,9 +91,9 @@
 								};
 							}
 
-							let day       = {ref : start};
+							let day        = {ref : start};
 							let dayMoment = moment(start, "YYYY-MM-DD");
-							var i         = 0;
+							var i          = 0;
 							var data;
 
 							while(day.ref <= end)
@@ -124,8 +124,10 @@
 						var steps        = null;
 						var drag         = null;
 						var currentDrag  = null;
+						var dragOffset   = null;
+						var sideDrag     = null;
 
-						$scope.dragBegin = function(index, event)
+						$scope.dragBegin = function(index, dayRef, event)
 						{
 							startPoint         = event.center.x;
 							currentPoint       = startPoint;
@@ -136,6 +138,52 @@
 								start : moment($scope.currentTask.current.start, "YYYY-MM-DD"),
 								end   : moment($scope.currentTask.current.end  , "YYYY-MM-DD")
 							};
+
+							if([$scope.currentTask.current.start, $scope.currentTask.current.end].indexOf(dayRef) < 0)
+							{
+								sideDrag = 0;
+							}
+							else
+							{
+								dragOffset = event.changedPointers[0].layerX - ((event.target.offsetLeft - event.target.scrollLeft) + (event.target.offsetParent.offsetLeft - event.target.offsetParent.scrollLeft));
+
+								if($scope.currentTask.current.start == dayRef && $scope.currentTask.current.start == dayRef)
+								{
+									if(dragOffset > 24 && dragOffset < 50)
+									{
+										sideDrag = 0;
+									}
+									else
+									{
+										if(dragOffset < 25)
+										{
+											sideDrag = -1;
+										}
+										else
+										{
+											sideDrag = 1;
+										}
+									}
+								}
+								else
+								{
+									if(($scope.currentTask.current.start == dayRef && dragOffset > 49) || ($scope.currentTask.current.start == dayRef && dragOffset < 50))
+									{
+										sideDrag = 0;
+									}
+									else
+									{
+										if($scope.currentTask.current.start == dayRef && dragOffset < 50)
+										{
+											sideDrag = -1;
+										}
+										else
+										{
+											sideDrag = 1;
+										}
+									}
+								}
+							}
 						};
 
 						$scope.moveTask = function(event)
@@ -164,8 +212,15 @@
 								drag.end.subtract  (-steps, "days");
 							}
 
-							$scope.currentTask.current.start = drag.start.format("YYYY-MM-DD");
-							$scope.currentTask.current.end   = drag.end.format("YYYY-MM-DD");
+							if(sideDrag <= 0)
+							{
+								$scope.currentTask.current.start = drag.start.format("YYYY-MM-DD");
+							}
+
+							if(sideDrag >= 0)
+							{
+								$scope.currentTask.current.end   = drag.end.format("YYYY-MM-DD");
+							}
 						};
 
 						$scope.dragFinish = function()
@@ -193,17 +248,23 @@
 				</tr>
 				<tr ng-repeat="task in tasks">
 					<th class="slot">
-						{{task.name}}
+						<div class="cell">
+							{{task.name}}
+						</div>
 					</th>
 					<th ng-repeat="day in days" class="slot">
 						<div class="cell" ng-class="(day.ref >= task.current.start && day.ref <= task.current.end) && 'task'"
-						  hm-panstart="currentTask == null && dragBegin($parent.$index, $event)" hm-panleft="currentTask != null && moveTask($event);"
-						  hm-panright="currentTask != null && moveTask($event);"
-						  hm-panend="dragFinish()"
+						  hm-panstart="currentTask == null && ((day.ref >= task.current.start && day.ref <= task.current.end) && dragBegin($parent.$index, day.ref, $event));"
+						  hm-panend="dragFinish();" hm-panright="currentTask != null && moveTask($event);"
+						  hm-panleft="currentTask != null && moveTask($event);"
 						>
-							<div style="width : 33%; height : 100%; background : #C6C6C6; float : left;" ng-if="day.ref == task.current.start">
+							<div style="float : left; height : 25px; background : #C7C7C7;" ng-if="day.ref == task.current.start"
+							  ng-style="{'width' : (day.ref == task.current.start && day.ref == task.current.end) ? '33.3%' : '50%'}"
+							>
 							</div>
-							<div style="width : 33%; height : 100%; background : #C6C6C6; float : right;" ng-if="day.ref == task.current.end">
+							<div style="width : 33.3%; float : right; height : 25px; background : #C7C7C7;" ng-if="day.ref == task.current.end"
+							  ng-style="{'width' : (day.ref == task.current.start && day.ref == task.current.end) ? '33.3%' : '50%'}"
+							>
 							</div>
 						</div>
 					</th>
