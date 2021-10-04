@@ -119,19 +119,25 @@
 							}
 						};
 
-						var startPoint   = null;
-						var currentPoint = null;
-						var steps        = null;
-						var drag         = null;
-						var currentDrag  = null;
-						var dragOffset   = null;
-						var sideDrag     = null;
+						var startPoint    = null;
+						var currentPoint  = null;
+						var steps         = null;
+						var drag          = null;
+						var currentDrag   = null;
+						var dragOffset    = null;
+						var sideDrag      = null;
+						var computedStart = null;
+						var computedEnd   = null;
+						var resultStart   = null;
+						var resultEnd     = null;
+						var flippedDrag   = false;
 
 						$scope.dragBegin = function(index, dayRef, event)
 						{
 							startPoint         = event.center.x;
 							currentPoint       = startPoint;
 							$scope.currentTask = $scope.tasks[index];
+							flippedDrag        = false;
 
 							currentDrag=
 							{
@@ -145,9 +151,9 @@
 							}
 							else
 							{
-								dragOffset = event.changedPointers[0].layerX - ((event.target.offsetLeft - event.target.scrollLeft) + (event.target.offsetParent.offsetLeft - event.target.offsetParent.scrollLeft));
+								dragOffset = event.changedPointers[0].layerX - (event.target.offsetParent.offsetLeft - event.target.offsetParent.scrollLeft);
 
-								if($scope.currentTask.current.start == dayRef && $scope.currentTask.current.start == dayRef)
+								if($scope.currentTask.current.start == dayRef && $scope.currentTask.current.end == dayRef)
 								{
 									if(dragOffset > 24 && dragOffset < 50)
 									{
@@ -167,19 +173,40 @@
 								}
 								else
 								{
-									if(($scope.currentTask.current.start == dayRef && dragOffset > 49) || ($scope.currentTask.current.start == dayRef && dragOffset < 50))
+									if(($scope.currentTask.current.start == dayRef && dragOffset > 49) || ($scope.currentTask.current.end == dayRef && dragOffset < 50))
 									{
 										sideDrag = 0;
 									}
 									else
 									{
-										if($scope.currentTask.current.start == dayRef && dragOffset < 50)
+										if($scope.currentTask.current.start == dayRef)
 										{
-											sideDrag = -1;
+											if(dayRef && dragOffset < 50)
+											{
+												sideDrag = -1;
+											}
+											else
+											{
+												sideDrag = 0;
+											}
 										}
 										else
 										{
-											sideDrag = 1;
+											if($scope.currentTask.current.end == dayRef)
+											{
+												if(dayRef && dragOffset > 49)
+												{
+													sideDrag = 1;
+												}
+												else
+												{
+													sideDrag = 0;
+												}
+											}
+											else
+											{
+												sideDrag = 0;
+											}
 										}
 									}
 								}
@@ -190,36 +217,80 @@
 						{
 							steps = Math.round((event.center.x - startPoint) / 75);
 
-							if(steps == 0)
+							if(!flippedDrag)
 							{
-								steps = 0;
-							}
-
-							drag=
-							{
-								start : moment(currentDrag.start.format("YYYY-MM-DD"), "YYYY-MM-DD"),
-								end   : moment(currentDrag.end.format  ("YYYY-MM-DD"), "YYYY-MM-DD")
-							};
-
-							if(steps >= 0)
-							{
-								drag.start.add(steps, "days");
-								drag.end.add  (steps, "days");
+								drag=
+								{
+									start : moment(currentDrag.start.format("YYYY-MM-DD"), "YYYY-MM-DD"),
+									end   : moment(currentDrag.end.format  ("YYYY-MM-DD"), "YYYY-MM-DD")
+								};
 							}
 							else
 							{
-								drag.start.subtract(-steps, "days");
-								drag.end.subtract  (-steps, "days");
+								drag=
+								{
+									start : moment(currentDrag.end.format("YYYY-MM-DD"), "YYYY-MM-DD"),
+									end   : moment(currentDrag.start.format("YYYY-MM-DD"), "YYYY-MM-DD")
+								};
+							}
+
+							if(steps >= 0)
+							{
+								if(sideDrag <= 0)
+								{
+									drag.start.add(steps, "days");
+								}
+
+								if(sideDrag >= 0)
+								{
+									drag.end.add  (steps, "days");
+								}
+							}
+							else
+							{
+								if(sideDrag <= 0)
+								{
+									drag.start.subtract(-steps, "days");
+								}
+
+								if(sideDrag >= 0)
+								{
+									drag.end.subtract  (-steps, "days");
+								}
+							}
+
+							computedStart = drag.start.format("YYYY-MM-DD");
+							computedEnd   = drag.end.format("YYYY-MM-DD");
+
+							if(sideDrag == 0)
+							{
+								resultStart = computedStart;
+								resultEnd   = computedEnd;
+							}
+							else
+							{
+								if(computedStart > computedEnd)
+								{
+									resultStart = computedEnd;
+									resultEnd   = computedStart;
+									sideDrag   *= -1;
+									flippedDrag = !flippedDrag;
+								}
+								else
+								{
+									resultStart = computedStart;
+									resultEnd   = computedEnd;
+								}
 							}
 
 							if(sideDrag <= 0)
 							{
-								$scope.currentTask.current.start = drag.start.format("YYYY-MM-DD");
+								$scope.currentTask.current.start = resultStart;
 							}
 
 							if(sideDrag >= 0)
 							{
-								$scope.currentTask.current.end   = drag.end.format("YYYY-MM-DD");
+								$scope.currentTask.current.end   = resultEnd;
 							}
 						};
 
@@ -256,7 +327,7 @@
 						<div class="cell" ng-class="(day.ref >= task.current.start && day.ref <= task.current.end) && 'task'"
 						  hm-panstart="currentTask == null && ((day.ref >= task.current.start && day.ref <= task.current.end) && dragBegin($parent.$index, day.ref, $event));"
 						  hm-panend="dragFinish();" hm-panright="currentTask != null && moveTask($event);"
-						  hm-panleft="currentTask != null && moveTask($event);"
+						  hm-panleft="currentTask != null && moveTask($event);" ng-mousedown="x()"
 						>
 							<div style="float : left; height : 25px; background : #C7C7C7;" ng-if="day.ref == task.current.start"
 							  ng-style="{'width' : (day.ref == task.current.start && day.ref == task.current.end) ? '33.3%' : '50%'}"
