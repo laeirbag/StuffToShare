@@ -327,7 +327,7 @@
 						<div class="cell" ng-class="(day.ref >= task.current.start && day.ref <= task.current.end) && 'task'"
 						  hm-panstart="currentTask == null && ((day.ref >= task.current.start && day.ref <= task.current.end) && dragBegin($parent.$index, day.ref, $event));"
 						  hm-panend="dragFinish();" hm-panright="currentTask != null && moveTask($event);"
-						  hm-panleft="currentTask != null && moveTask($event);" ng-mousedown="x()"
+						  hm-panleft="currentTask != null && moveTask($event);"
 						>
 							<div style="float : left; height : 25px; background : #C7C7C7;" ng-if="day.ref == task.current.start"
 							  ng-style="{'width' : (day.ref == task.current.start && day.ref == task.current.end) ? '33.3%' : '50%'}"
