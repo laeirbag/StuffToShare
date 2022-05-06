@@ -4,11 +4,14 @@
 		<meta   charset="utf-8">
 		<meta   http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta   name="viewport"              content="width=device-width, initial-scale=1">
-		<link   href="bootstrap.css"         rel="stylesheet">
+		<link   rel="stylesheet" href="bootstrap.css">
+		<link   rel="stylesheet" href="mobile-angular-ui-hover.min.css" />
+		<link   rel="stylesheet" href="mobile-angular-ui-base.min.css" />
+		<link   rel="stylesheet" href="mobile-angular-ui-desktop.min.css" />
 		<script src="moment.js"        ></script>
-		<script src="hammer.min.js"    ></script>
 		<script src="angular.min.js"   ></script>
-		<script src="angular.hammer.js"></script>
+		<script src="mobile-angular-ui.min.js"></script>
+		<script src="mobile-angular-ui.gestures.min.js"></script>
 		<style>
 			tr
 			{
@@ -41,306 +44,372 @@
 				background : #1166FF;
 			}
 		</style>
-		<script>
-			angular
-				.module("gantt", ["hmTouchEvents"])
-				.controller
-				(
-					"planning",
-					function($scope)
+<script>
+angular
+	.module("gantt", ["mobile-angular-ui", "mobile-angular-ui.gestures"])
+	.directive
+	(
+		"touchFn",
+		function($touch, $parse)
+		{
+			return {
+				restrict : "A",
+				scope    : {fn : "&touchFn"},
+				link     : function(scope, elem, attrs)
+				{
+					scope.touch         = null;
+
+					$touch.bind
+					(
+						elem,
+						{
+							start : function(touch, event)
+							{
+								scope.containerRect = elem[0].getBoundingClientRect();
+								scope.touch          = touch;
+
+								scope.$apply();
+								scope.$apply(scope.fn);
+							},
+							cancel : function(touch, event)
+							{
+								scope.touch = touch;
+
+								scope.$apply();
+								scope.$apply(scope.fn);
+							},
+							move : function(touch, event)
+							{
+								scope.touch = touch;
+
+								scope.$apply();
+								scope.$apply(scope.fn);
+							},
+							end : function(touch, event)
+							{
+								scope.touch = touch;
+
+								scope.$apply();
+								scope.$apply(scope.fn);
+							}
+						}
+					);
+				}
+			};
+		}
+	)
+	.controller
+	(
+		"planning",
+		function($scope)
+		{
+			var start           = "2020-01-01";
+			var end             = "2020-12-31";
+			var currentDrag    = null;
+			$scope.currentTask = null;
+
+			function init()
+			{
+				$scope.tasks=
+				[{
+					name  : "Tarea",
+					//start : "2020-04-02",
+					//end   : "2020-07-22"
+
+					start : "2020-04-01",
+					end   : "2020-04-01"
+				}];
+
+				$scope.dragPoint   = null;
+				$scope.days        = [];
+
+				let count = $scope.tasks.length;
+
+				var data;
+
+				for(let i = 0; i < count; i++)
+				{
+					$scope.tasks[i]=
 					{
-						var start          = "2020-01-01";
-						var end            = "2020-12-31";
-						var currentDrag    = null;
-						$scope.currentTask = null;
-
-						function init()
+						name : $scope.tasks[i].name,
+						original:
 						{
-							$scope.tasks=
-							[{
-								name  : "Tarea",
-								//start : "2020-04-02",
-								//end   : "2020-07-22"
-
-								start : "2020-04-01",
-								end   : "2020-04-01"
-							}];
-
-							$scope.dragPoint   = null;
-							$scope.days        = [];
-
-							let count = $scope.tasks.length;
-
-							var data;
-
-							for(let i = 0; i < count; i++)
-							{
-								$scope.tasks[i]=
-								{
-									name : $scope.tasks[i].name,
-									original:
-									{
-										start : $scope.tasks[i].start,
-										end   : $scope.tasks[i].end
-									},
-									current:
-									{
-										start : $scope.tasks[i].start,
-										end   : $scope.tasks[i].end
-									}
-								};
-							}
-
-							let day        = {ref : start};
-							let dayMoment = moment(start, "YYYY-MM-DD");
-							var i          = 0;
-							var data;
-
-							while(day.ref <= end)
-							{
-								data = day.ref.split("-");
-
-								$scope.days.push
-								({
-									id  : i,
-									ref : day.ref,
-									data:
-									{
-										year  : data[0],
-										month : data[1],
-										day   : data[2]
-									}
-								});
-
-								i++;
-								dayMoment.add(1,"days");
-
-								day.ref = dayMoment.format("YYYY-MM-DD");
-							}
-						};
-
-						var startPoint    = null;
-						var currentPoint  = null;
-						var steps         = null;
-						var drag          = null;
-						var currentDrag   = null;
-						var dragOffset    = null;
-						var sideDrag      = null;
-						var computedStart = null;
-						var computedEnd   = null;
-						var resultStart   = null;
-						var resultEnd     = null;
-						var flippedDrag   = false;
-
-						$scope.dragBegin = function(index, dayRef, event)
+							start : $scope.tasks[i].start,
+							end   : $scope.tasks[i].end
+						},
+						current:
 						{
-							startPoint         = event.center.x;
-							currentPoint       = startPoint;
-							$scope.currentTask = $scope.tasks[index];
-							flippedDrag        = false;
+							start : $scope.tasks[i].start,
+							end   : $scope.tasks[i].end
+						}
+					};
+				}
 
-							currentDrag=
-							{
-								start : moment($scope.currentTask.current.start, "YYYY-MM-DD"),
-								end   : moment($scope.currentTask.current.end  , "YYYY-MM-DD")
-							};
+				let day       = {ref : start};
+				let dayMoment = moment(start, "YYYY-MM-DD");
+				var i         = 0;
+				var data;
 
-							if([$scope.currentTask.current.start, $scope.currentTask.current.end].indexOf(dayRef) < 0)
+				while(day.ref <= end)
+				{
+					data = day.ref.split("-");
+
+					$scope.days.push
+					({
+						id  : i,
+						ref : day.ref,
+						data:
+						{
+							year  : data[0],
+							month : data[1],
+							day   : data[2]
+						}
+					});
+
+					i++;
+					dayMoment.add(1,"days");
+
+					day.ref = dayMoment.format("YYYY-MM-DD");
+				}
+			};
+
+			var startPoint    = null;
+			var currentPoint  = null;
+			var steps         = null;
+			var drag          = null;
+			var currentDrag   = null;
+			var dragOffset    = null;
+			var sideDrag      = null;
+			var computedStart = null;
+			var computedEnd   = null;
+			var resultStart   = null;
+			var resultEnd     = null;
+			var flippedDrag   = false;
+
+			function dragBegin(index, dayRef, event)
+			{
+				startPoint         = event.startX;
+				currentPoint       = startPoint;
+				$scope.currentTask = $scope.tasks[index];
+				flippedDrag        = false;
+
+				currentDrag=
+				{
+					start : moment($scope.currentTask.current.start, "YYYY-MM-DD"),
+					end   : moment($scope.currentTask.current.end  , "YYYY-MM-DD")
+				};
+
+				if([$scope.currentTask.current.start, $scope.currentTask.current.end].indexOf(dayRef) < 0)
+				{
+					sideDrag = 0;
+				}
+				else
+				{
+					dragOffset = (event.x - event.distanceX);
+
+					console.log(dragOffset);
+
+					if($scope.currentTask.current.start == dayRef && $scope.currentTask.current.end == dayRef)
+					{
+						if(dragOffset > 32 && dragOffset < 65)
+						{
+							sideDrag = 0;
+						}
+						else
+						{
+							if(dragOffset < 33)
 							{
-								sideDrag = 0;
+								sideDrag = -1;
 							}
 							else
 							{
-								dragOffset = event.changedPointers[0].layerX - (event.target.offsetParent.offsetLeft - event.target.offsetParent.scrollLeft);
-
-								if($scope.currentTask.current.start == dayRef && $scope.currentTask.current.end == dayRef)
-								{
-									if(dragOffset > 32 && dragOffset < 65)
-									{
-										sideDrag = 0;
-									}
-									else
-									{
-										if(dragOffset < 33)
-										{
-											sideDrag = -1;
-										}
-										else
-										{
-											sideDrag = 1;
-										}
-									}
-								}
-								else
-								{
-									if(($scope.currentTask.current.start == dayRef && dragOffset > 49) || ($scope.currentTask.current.end == dayRef && dragOffset < 50))
-									{
-										sideDrag = 0;
-									}
-									else
-									{
-										if($scope.currentTask.current.start == dayRef)
-										{
-											if(dayRef && dragOffset < 50)
-											{
-												sideDrag = -1;
-											}
-											else
-											{
-												sideDrag = 0;
-											}
-										}
-										else
-										{
-											if($scope.currentTask.current.end == dayRef)
-											{
-												if(dayRef && dragOffset > 49)
-												{
-													sideDrag = 1;
-												}
-												else
-												{
-													sideDrag = 0;
-												}
-											}
-											else
-											{
-												sideDrag = 0;
-											}
-										}
-									}
-								}
+								sideDrag = 1;
 							}
-						};
-
-						$scope.moveTask = function(event)
-						{
-							steps = Math.round((event.center.x - startPoint) / 75);
-
-							if(!flippedDrag)
-							{
-								drag=
-								{
-									start : moment(currentDrag.start.format("YYYY-MM-DD"), "YYYY-MM-DD"),
-									end   : moment(currentDrag.end.format  ("YYYY-MM-DD"), "YYYY-MM-DD")
-								};
-							}
-							else
-							{
-								drag=
-								{
-									start : moment(currentDrag.end.format("YYYY-MM-DD"), "YYYY-MM-DD"),
-									end   : moment(currentDrag.start.format("YYYY-MM-DD"), "YYYY-MM-DD")
-								};
-							}
-
-							if(steps >= 0)
-							{
-								if(sideDrag <= 0)
-								{
-									drag.start.add(steps, "days");
-								}
-
-								if(sideDrag >= 0)
-								{
-									drag.end.add  (steps, "days");
-								}
-							}
-							else
-							{
-								if(sideDrag <= 0)
-								{
-									drag.start.subtract(-steps, "days");
-								}
-
-								if(sideDrag >= 0)
-								{
-									drag.end.subtract  (-steps, "days");
-								}
-							}
-
-							computedStart = drag.start.format("YYYY-MM-DD");
-							computedEnd   = drag.end.format("YYYY-MM-DD");
-
-							if(sideDrag == 0)
-							{
-								resultStart = computedStart;
-								resultEnd   = computedEnd;
-							}
-							else
-							{
-								if(computedStart > computedEnd)
-								{
-									resultStart = computedEnd;
-									resultEnd   = computedStart;
-									sideDrag   *= -1;
-									flippedDrag = !flippedDrag;
-								}
-								else
-								{
-									resultStart = computedStart;
-									resultEnd   = computedEnd;
-								}
-							}
-
-							if(sideDrag <= 0)
-							{
-								$scope.currentTask.current.start = resultStart;
-							}
-
-							if(sideDrag >= 0)
-							{
-								$scope.currentTask.current.end   = resultEnd;
-							}
-						};
-
-						$scope.dragFinish = function()
-						{
-							$scope.currentTask = null;
-						};
-
-						init();
+						}
 					}
-				);
-		</script>
+					else
+					{
+						if(($scope.currentTask.current.start == dayRef && dragOffset > 49) || ($scope.currentTask.current.end == dayRef && dragOffset < 50))
+						{
+							sideDrag = 0;
+						}
+						else
+						{
+							if($scope.currentTask.current.start == dayRef)
+							{
+								if(dayRef && dragOffset < 50)
+								{
+									sideDrag = -1;
+								}
+								else
+								{
+									sideDrag = 0;
+								}
+							}
+							else
+							{
+								if($scope.currentTask.current.end == dayRef)
+								{
+									if(dayRef && dragOffset > 49)
+									{
+										sideDrag = 1;
+									}
+									else
+									{
+										sideDrag = 0;
+									}
+								}
+								else
+								{
+									sideDrag = 0;
+								}
+							}
+						}
+					}
+				}
+			};
+
+			function moveTask(event)
+			{
+				steps = Math.round(event.distanceX / 75);
+
+				if(!flippedDrag)
+				{
+					drag=
+					{
+						start : moment(currentDrag.start.format("YYYY-MM-DD"), "YYYY-MM-DD"),
+						end   : moment(currentDrag.end.format  ("YYYY-MM-DD"), "YYYY-MM-DD")
+					};
+				}
+				else
+				{
+					drag=
+					{
+						start : moment(currentDrag.end.format("YYYY-MM-DD"), "YYYY-MM-DD"),
+						end   : moment(currentDrag.start.format("YYYY-MM-DD"), "YYYY-MM-DD")
+					};
+				}
+
+				if(steps >= 0)
+				{
+					if(sideDrag <= 0)
+					{
+						drag.start.add(steps, "days");
+					}
+
+					if(sideDrag >= 0)
+					{
+						drag.end.add  (steps, "days");
+					}
+				}
+				else
+				{
+					if(sideDrag <= 0)
+					{
+						drag.start.subtract(-steps, "days");
+					}
+
+					if(sideDrag >= 0)
+					{
+						drag.end.subtract  (-steps, "days");
+					}
+				}
+
+				computedStart = drag.start.format("YYYY-MM-DD");
+				computedEnd   = drag.end.format("YYYY-MM-DD");
+
+				if(sideDrag == 0)
+				{
+					resultStart = computedStart;
+					resultEnd   = computedEnd;
+				}
+				else
+				{
+					if(computedStart > computedEnd)
+					{
+						resultStart = computedEnd;
+						resultEnd   = computedStart;
+						sideDrag   *= -1;
+						flippedDrag = !flippedDrag;
+					}
+					else
+					{
+						resultStart = computedStart;
+						resultEnd   = computedEnd;
+					}
+				}
+
+				if(sideDrag <= 0)
+				{
+					$scope.currentTask.current.start = resultStart;
+				}
+
+				if(sideDrag >= 0)
+				{
+					$scope.currentTask.current.end   = resultEnd;
+				}
+			};
+
+			function dragFinish()
+			{
+				$scope.currentTask = null;
+			};
+
+			$scope.touchAction = function(id, touch, row, dayRef)
+			{
+				console.log(angular.element(document.getElementById(id)));
+				/*switch(touch.type)
+				{
+					case "touchstart":
+						dragBegin(row, dayRef, touch)
+					break;
+					case "touchmove":
+						moveTask(touch)
+					break;
+					case "touchend":
+						dragFinish();
+					break;
+				}*/
+			};
+
+			init();
+		}
+	);
+</script>
 	</head>
 	<body ng-app="gantt" ng-controller="planning">
-		<table>
-			<tbody>
-				<tr>
-					<th class="slot">
-						#
-					</th>
-					<th ng-repeat="day in days" class="slot">
-						<div class="number cell">
-							{{day.ref}}
-						</div>
-					</th>
-				</tr>
-				<tr ng-repeat="task in tasks">
-					<th class="slot">
-						<div class="cell">
-							{{task.name}}
-						</div>
-					</th>
-					<th ng-repeat="day in days" class="slot">
-						<div class="cell" ng-class="(day.ref >= task.current.start && day.ref <= task.current.end) && 'task'"
-						  hm-panstart="currentTask == null && ((day.ref >= task.current.start && day.ref <= task.current.end) && dragBegin($parent.$index, day.ref, $event));"
-						  hm-panend="dragFinish();" hm-panright="currentTask != null && moveTask($event);"
-						  hm-panleft="currentTask != null && moveTask($event);"
-						>
-							<div style="float : left; height : 25px; background : #C7C7C7;" ng-if="day.ref == task.current.start"
-							  ng-style="{'width' : (day.ref == task.current.start && day.ref == task.current.end) ? '33.3%' : '50%'}"
+		<div>
+			<div style="overflow-y : auto; height : 100vh;">
+				<table>
+					<tbody>
+						<tr>
+							<th class="slot">
+								#
+							</th>
+							<th ng-repeat="day in days" class="slot">
+								<div class="number cell">
+									{{day.ref}}
+								</div>
+							</th>
+						</tr>
+					</tbody>
+					<tbody>
+						<tr ng-repeat="task in tasks">
+							<th class="slot">
+								<div class="cell">
+									{{task.name}}
+								</div>
+							</th>
+							<td ng-repeat="day in days" id="{{$parent.$index + '_' + $index}}"
+							  class="slot" touch-fn="touchAction($parent.$parent.$index + '_' + $index, touch, $parent.$parent.$index, day.ref)"
 							>
-							</div>
-							<div style="width : 33.3%; float : right; height : 25px; background : #C7C7C7;" ng-if="day.ref == task.current.end"
-							  ng-style="{'width' : (day.ref == task.current.start && day.ref == task.current.end) ? '33.3%' : '50%'}"
-							>
-							</div>
-						</div>
-					</th>
-				</tr>
-			</tbody>
-		</table>
+								<div class="cell" ng-class="(day.ref >= task.current.start && day.ref <= task.current.end) && 'task'">
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
 	</body>
 </html>
