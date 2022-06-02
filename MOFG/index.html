@@ -30,8 +30,10 @@
 
 			.cell
 			{
-				width  : 75px;
-				height : 25px;
+				width       :    75px;
+				height      :    25px;
+				display     :    flex;
+				align-items : stretch;
 			}
 
 			.number
@@ -42,6 +44,16 @@
 			.task
 			{
 				background : #1166FF;
+				height     :    100%;
+				flex       :       1;
+			}
+
+			.taskEdge
+			{
+				background :         #C7C7C7;
+				height     : 100% !important;
+				display    :    inline-block;
+				flex       :               1;
 			}
 		</style>
 <script>
@@ -66,7 +78,7 @@ angular
 							start : function(touch, event)
 							{
 								scope.containerRect = elem[0].getBoundingClientRect();
-								scope.touch          = touch;
+								scope.touch         = touch;
 
 								scope.$apply();
 								scope.$apply(scope.fn);
@@ -156,8 +168,8 @@ angular
 
 					$scope.days.push
 					({
-						id  : i,
-						ref : day.ref,
+						id    : i,
+						ref   : day.ref,
 						data:
 						{
 							year  : data[0],
@@ -173,25 +185,27 @@ angular
 				}
 			};
 
-			var startPoint    = null;
-			var currentPoint  = null;
-			var steps         = null;
-			var drag          = null;
-			var currentDrag   = null;
-			var dragOffset    = null;
-			var sideDrag      = null;
-			var computedStart = null;
-			var computedEnd   = null;
-			var resultStart   = null;
-			var resultEnd     = null;
+			var startPoint    =  null;
+			var currentPoint  =  null;
+			var steps         =  null;
+			var drag          =  null;
+			var currentDrag   =  null;
+			var dragOffset    =  null;
+			var sideDrag      =  null;
+			var computedStart =  null;
+			var computedEnd   =  null;
+			var resultStart   =  null;
+			var resultEnd     =  null;
 			var flippedDrag   = false;
 
-			function dragBegin(index, dayRef, event)
+			function dragBegin(side, index, dayRef, event)
 			{
 				startPoint         = event.startX;
 				currentPoint       = startPoint;
 				$scope.currentTask = $scope.tasks[index];
 				flippedDrag        = false;
+
+				console.log(index);
 
 				currentDrag=
 				{
@@ -199,7 +213,9 @@ angular
 					end   : moment($scope.currentTask.current.end  , "YYYY-MM-DD")
 				};
 
-				if([$scope.currentTask.current.start, $scope.currentTask.current.end].indexOf(dayRef) < 0)
+				sideDrag = side;
+
+				/*if([$scope.currentTask.current.start, $scope.currentTask.current.end].indexOf(dayRef) < 0)
 				{
 					sideDrag = 0;
 				}
@@ -211,7 +227,7 @@ angular
 
 					if($scope.currentTask.current.start == dayRef && $scope.currentTask.current.end == dayRef)
 					{
-						if(dragOffset > 32 && dragOffset < 65)
+						if(dragOf	fset > 32 && dragOffset < 65)
 						{
 							sideDrag = 0;
 						}
@@ -266,7 +282,7 @@ angular
 							}
 						}
 					}
-				}
+				}*/
 			};
 
 			function moveTask(event)
@@ -355,13 +371,14 @@ angular
 				$scope.currentTask = null;
 			};
 
-			$scope.touchAction = function(id, touch, row, dayRef)
+			$scope.touchAction = function(side, touch, row, dayRef)
 			{
-				console.log(angular.element(document.getElementById(id)));
-				/*switch(touch.type)
+				//console.log(angular.element(document.getElementById(id)));
+				//console.log(side, touch, row, dayRef);
+				switch(touch.type)
 				{
 					case "touchstart":
-						dragBegin(row, dayRef, touch)
+						dragBegin(side, row, dayRef, touch);
 					break;
 					case "touchmove":
 						moveTask(touch)
@@ -369,7 +386,7 @@ angular
 					case "touchend":
 						dragFinish();
 					break;
-				}*/
+				}
 			};
 
 			init();
@@ -401,9 +418,21 @@ angular
 								</div>
 							</th>
 							<td ng-repeat="day in days" id="{{$parent.$index + '_' + $index}}"
-							  class="slot" touch-fn="touchAction($parent.$parent.$index + '_' + $index, touch, $parent.$parent.$index, day.ref)"
+							  class="slot"
 							>
-								<div class="cell" ng-class="(day.ref >= task.current.start && day.ref <= task.current.end) && 'task'">
+								<div class="cell" ng-if="(day.ref >= task.current.start && day.ref <= task.current.end)"
+								  ng-class="cellLayout(day.ref, task.current)" style="background : #000000;"
+								>
+									<div touch-fn="touchAction(-1, touch, $parent.$parent.$parent.$parent.$index, day.ref)" class="taskEdge edgeLeft"
+									  ng-if="day.ref == task.current.start"
+									>
+									</div>
+									<div touch-fn="touchAction(0, touch, $parent.$parent.$parent.$index, day.ref)" class="task">
+									</div>
+									<div touch-fn="touchAction(1, touch, $parent.$parent.$parent.$parent.$index, day.ref)"
+									  class="taskEdge edgeRight" ng-if="day.ref == task.current.end"
+									>
+									</div>
 								</div>
 							</td>
 						</tr>
