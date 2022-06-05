@@ -44,16 +44,27 @@
 			.task
 			{
 				background : #1166FF;
-				height     :    100%;
-				flex       :       1;
 			}
 
 			.taskEdge
 			{
-				background :         #C7C7C7;
-				height     : 100% !important;
-				display    :    inline-block;
-				flex       :               1;
+				background : #C7C7C7;
+			}
+
+			.task, .taskEdge
+			{
+				height : 100% !important;
+				flex   : 1;
+			}
+
+			.edgeLeft
+			{
+				border-radius : 15px 0px 0px 15px;
+			}
+
+			.edgeRight
+			{
+				border-radius : 0px 15px 15px 0px;
 			}
 		</style>
 <script>
@@ -198,14 +209,12 @@ angular
 			var resultEnd     =  null;
 			var flippedDrag   = false;
 
-			function dragBegin(side, index, dayRef, event)
+			function dragBegin(side, index, event)
 			{
 				startPoint         = event.startX;
 				currentPoint       = startPoint;
 				$scope.currentTask = $scope.tasks[index];
 				flippedDrag        = false;
-
-				console.log(index);
 
 				currentDrag=
 				{
@@ -214,75 +223,6 @@ angular
 				};
 
 				sideDrag = side;
-
-				/*if([$scope.currentTask.current.start, $scope.currentTask.current.end].indexOf(dayRef) < 0)
-				{
-					sideDrag = 0;
-				}
-				else
-				{
-					dragOffset = (event.x - event.distanceX);
-
-					console.log(dragOffset);
-
-					if($scope.currentTask.current.start == dayRef && $scope.currentTask.current.end == dayRef)
-					{
-						if(dragOf	fset > 32 && dragOffset < 65)
-						{
-							sideDrag = 0;
-						}
-						else
-						{
-							if(dragOffset < 33)
-							{
-								sideDrag = -1;
-							}
-							else
-							{
-								sideDrag = 1;
-							}
-						}
-					}
-					else
-					{
-						if(($scope.currentTask.current.start == dayRef && dragOffset > 49) || ($scope.currentTask.current.end == dayRef && dragOffset < 50))
-						{
-							sideDrag = 0;
-						}
-						else
-						{
-							if($scope.currentTask.current.start == dayRef)
-							{
-								if(dayRef && dragOffset < 50)
-								{
-									sideDrag = -1;
-								}
-								else
-								{
-									sideDrag = 0;
-								}
-							}
-							else
-							{
-								if($scope.currentTask.current.end == dayRef)
-								{
-									if(dayRef && dragOffset > 49)
-									{
-										sideDrag = 1;
-									}
-									else
-									{
-										sideDrag = 0;
-									}
-								}
-								else
-								{
-									sideDrag = 0;
-								}
-							}
-						}
-					}
-				}*/
 			};
 
 			function moveTask(event)
@@ -373,12 +313,10 @@ angular
 
 			$scope.touchAction = function(side, touch, row, dayRef)
 			{
-				//console.log(angular.element(document.getElementById(id)));
-				//console.log(side, touch, row, dayRef);
 				switch(touch.type)
 				{
 					case "touchstart":
-						dragBegin(side, row, dayRef, touch);
+						dragBegin(side, row, touch);
 					break;
 					case "touchmove":
 						moveTask(touch)
@@ -421,7 +359,7 @@ angular
 							  class="slot"
 							>
 								<div class="cell" ng-if="(day.ref >= task.current.start && day.ref <= task.current.end)"
-								  ng-class="cellLayout(day.ref, task.current)" style="background : #000000;"
+								  ng-class="cellLayout(day.ref, task.current)"
 								>
 									<div touch-fn="touchAction(-1, touch, $parent.$parent.$parent.$parent.$index, day.ref)" class="taskEdge edgeLeft"
 									  ng-if="day.ref == task.current.start"
