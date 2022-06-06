@@ -25,13 +25,15 @@
 
 			.slot
 			{
-				border : 1px solid #000000;
+				border         : 1px solid #000000;
+				vertical-align : bottom;
+				height         : 25px;
 			}
 
 			.cell
 			{
 				width       :    75px;
-				height      :    25px;
+				height      :    15px;
 				display     :    flex;
 				align-items : stretch;
 			}
@@ -43,18 +45,19 @@
 
 			.task
 			{
+				flex       : 2;
 				background : #1166FF;
 			}
 
 			.taskEdge
 			{
 				background : #C7C7C7;
+				flex       : 1;
 			}
 
 			.task, .taskEdge
 			{
 				height : 100% !important;
-				flex   : 1;
 			}
 
 			.edgeLeft
@@ -65,6 +68,14 @@
 			.edgeRight
 			{
 				border-radius : 0px 15px 15px 0px;
+			}
+
+			.progress
+			{
+				height        : 50%;
+				background    : #AA0000;
+				margin-top    : 8px;
+				border-radius : unset;
 			}
 		</style>
 <script>
@@ -135,12 +146,13 @@ angular
 			{
 				$scope.tasks=
 				[{
-					name  : "Tarea",
+					name     : "Tarea",
 					//start : "2020-04-02",
 					//end   : "2020-07-22"
 
-					start : "2020-04-01",
-					end   : "2020-04-01"
+					start    : "2020-04-01",
+					end      : "2020-04-01",
+					progress : 50
 				}];
 
 				$scope.dragPoint   = null;
@@ -152,9 +164,14 @@ angular
 
 				for(let i = 0; i < count; i++)
 				{
+					let days         = ((new Date($scope.tasks[i].end) - new Date($scope.tasks[i].start)) / 86400000) + 1;
+
 					$scope.tasks[i]=
 					{
-						name : $scope.tasks[i].name,
+						name         : $scope.tasks[i].name,
+						days         : days,
+						progress     : $scope.tasks[i].progress,
+						progressDays : days * ($scope.tasks[i].progress / 100),
 						original:
 						{
 							start : $scope.tasks[i].start,
@@ -224,6 +241,33 @@ angular
 
 				sideDrag = side;
 			};
+
+			$scope.progressDisplay = function(dayRef, task)
+			{		
+				return $scope.dayCount(dayRef, task.current.start) < task.progressDays;
+			}
+
+			$scope.progEndDisplay = function(dayCount, progressDays)
+			{
+				if(dayCount < (progressDays - 1))
+				{
+					return {"width" : "100%"}
+				}
+
+				let intPart = Math.floor(progressDays);
+
+				if(intPart == progressDays)
+				{
+					return {"width" : "100%"}
+				}
+
+				return {"width" : ((progressDays - intPart) * 100) + "%"};
+			}
+
+			$scope.dayCount = function(dayRef, taskStart)
+			{
+				return ((new Date (dayRef) - new Date(taskStart)) / 86400000);
+			}
 
 			function moveTask(event)
 			{
@@ -304,6 +348,11 @@ angular
 				{
 					$scope.currentTask.current.end   = resultEnd;
 				}
+
+				$scope.currentTask.days               = ((new Date ($scope.currentTask.current.end) - new Date($scope.currentTask.current.start)) / 86400000) + 1;
+				$scope.currentTask.progressDays       = $scope.currentTask.days * ($scope.currentTask.progress / 100);
+				$scope.currentTask.lastProgressDay    = Math.ceil($scope.currentTask.progressDays);
+				$scope.currentTask.lastProgDayRemnant = ($scope.currentTask.progressDays - (Math.floor($scope.currentTask.progressDays)));
 			};
 
 			function dragFinish()
@@ -355,17 +404,20 @@ angular
 									{{task.name}}
 								</div>
 							</th>
-							<td ng-repeat="day in days" id="{{$parent.$index + '_' + $index}}"
-							  class="slot"
-							>
+							<td ng-repeat="day in days" id="{{$parent.$index + '_' + $index}}" class="slot">
 								<div class="cell" ng-if="(day.ref >= task.current.start && day.ref <= task.current.end)"
 								  ng-class="cellLayout(day.ref, task.current)"
 								>
-									<div touch-fn="touchAction(-1, touch, $parent.$parent.$parent.$parent.$index, day.ref)" class="taskEdge edgeLeft"
-									  ng-if="day.ref == task.current.start"
+									<div touch-fn="touchAction(-1, touch, $parent.$parent.$parent.$parent.$index, day.ref)"
+									  class="taskEdge edgeLeft" ng-if="day.ref == task.current.start"
 									>
 									</div>
 									<div touch-fn="touchAction(0, touch, $parent.$parent.$parent.$index, day.ref)" class="task">
+										{{progDay = dayCount(day.ref, task.current.start);""}}
+										<div class="progress" ng-if="task.progress > 0 && progDay < task.progressDays"
+										  ng-style="progEndDisplay(progDay, task.progressDays)"
+										>
+										</div>
 									</div>
 									<div touch-fn="touchAction(1, touch, $parent.$parent.$parent.$parent.$index, day.ref)"
 									  class="taskEdge edgeRight" ng-if="day.ref == task.current.end"
