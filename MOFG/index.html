@@ -46,7 +46,26 @@
 			.task
 			{
 				flex       : 3;
+			}
+
+			.changed
+			{
+				background : #11AA11;
+			}
+
+			.unchanged
+			{
 				background : #1166FF;
+			}
+
+			.defaulted
+			{
+				background : #9876AA;
+			}
+
+			.outOfBounds
+			{
+				background : #DD9900;
 			}
 
 			.taskEdge
@@ -137,53 +156,60 @@ angular
 		"planning",
 		function($scope)
 		{
-			var start           = "2020-01-01";
-			var end             = "2020-12-31";
-			var currentDrag    = null;
-			$scope.currentTask = null;
+			var start       = "2020-01-01";
+			var end         = "2020-12-31";
+			var currentDrag  = null;
+			var currentTask = null;
 
 			function init()
 			{
-				$scope.tasks=
-				[{
-					name     : "Tarea",
-					//start : "2020-04-02",
-					//end   : "2020-07-22"
+				var overview=
+				{
+					start : "2020-03-01",
+					end   : "2020-05-31",
+					tasks :
+					[{
+						name     : "Tarea",
+						//start : "2020-04-02",
+						//end   : "2020-07-22"
 
-					start    : "2020-04-01",
-					end      : "2020-04-01",
-					progress : 50
-				}];
+						//start    : "2020-04-01",
+						//end      : "2020-04-01",
+						progress : 50
+					}]
+				};
+					
 
 				$scope.dragPoint   = null;
 				$scope.days        = [];
 
-				let count = $scope.tasks.length;
+				let count = overview.tasks.length;
 
 				var data;
 
+				$scope.selectedOverview = angular.copy(overview);
+
 				for(let i = 0; i < count; i++)
 				{
-					let days         = ((new Date($scope.tasks[i].end) - new Date($scope.tasks[i].start)) / 86400000) + 1;
+					$scope.selectedOverview.tasks[i].defaulted = $scope.selectedOverview.tasks[i].start == null;
 
-					$scope.tasks[i]=
+					if($scope.selectedOverview.tasks[i].defaulted)
 					{
-						name         : $scope.tasks[i].name,
-						days         : days,
-						progress     : $scope.tasks[i].progress,
-						progressDays : days * ($scope.tasks[i].progress / 100),
-						original:
-						{
-							start : $scope.tasks[i].start,
-							end   : $scope.tasks[i].end
-						},
-						current:
-						{
-							start : $scope.tasks[i].start,
-							end   : $scope.tasks[i].end
-						}
-					};
+						$scope.selectedOverview.tasks[i].start = $scope.selectedOverview.start;
+						$scope.selectedOverview.tasks[i].end   = $scope.selectedOverview.end;
+					}
+
+					let days                                            = ((new Date($scope.selectedOverview.tasks[i].end) -
+						new Date($scope.selectedOverview.tasks[i].start)) / 86400000) + 1;
+
+					let progressDays                                    = days * ($scope.selectedOverview.tasks[i].progress / 100);
+					$scope.selectedOverview.tasks[i].days               = days;
+					$scope.selectedOverview.tasks[i].progressDays       = progressDays;
+					$scope.selectedOverview.tasks[i].lastProgressDay    = Math.ceil(progressDays);
+					$scope.selectedOverview.tasks[i].lastProgDayRemnant = (progressDays - (Math.floor(progressDays)));
 				}
+
+				$scope.editableOverview = angular.copy($scope.selectedOverview);
 
 				let day       = {ref : start};
 				let dayMoment = moment(start, "YYYY-MM-DD");
@@ -213,30 +239,28 @@ angular
 				}
 			};
 
-			var startPoint    =  null;
-			var currentPoint  =  null;
-			var steps         =  null;
-			var drag          =  null;
-			var currentDrag   =  null;
-			var dragOffset    =  null;
-			var sideDrag      =  null;
-			var computedStart =  null;
-			var computedEnd   =  null;
-			var resultStart   =  null;
-			var resultEnd     =  null;
-			var flippedDrag   = false;
+			var startPoint       =  null;
+			var steps            =  null;
+			var drag             =  null;
+			var currentDrag      =  null;
+			var currentTaskIndex =  null;
+			var sideDrag         =  null;
+			var computedStart    =  null;
+			var computedEnd      =  null;
+			var resultStart      =  null;
+			var resultEnd        =  null;
+			var flippedDrag      = false;
 
 			function dragBegin(side, index, event)
 			{
-				startPoint         = event.startX;
-				currentPoint       = startPoint;
-				$scope.currentTask = $scope.tasks[index];
-				flippedDrag        = false;
+				startPoint  = event.startX;
+				currentTask = $scope.editableOverview.tasks[index];
+				flippedDrag = false;
 
 				currentDrag=
 				{
-					start : moment($scope.currentTask.current.start, "YYYY-MM-DD"),
-					end   : moment($scope.currentTask.current.end  , "YYYY-MM-DD")
+					start : moment(currentTask.start, "YYYY-MM-DD"),
+					end   : moment(currentTask.end  , "YYYY-MM-DD")
 				};
 
 				sideDrag = side;
@@ -244,7 +268,7 @@ angular
 
 			$scope.progressDisplay = function(dayRef, task)
 			{		
-				return $scope.dayCount(dayRef, task.current.start) < task.progressDays;
+				return $scope.dayCount(dayRef, task.start) < task.progressDays;
 			}
 
 			$scope.progEndDisplay = function(dayCount, progressDays)
@@ -262,6 +286,19 @@ angular
 				}
 
 				return {"width" : ((progressDays - intPart) * 100) + "%"};
+			}
+
+			$scope.checkBoundingValues = function(index)
+			{
+				if(angular.equals($scope.editableOverview.tasks[index], $scope.selectedOverview.tasks[index]))
+				{
+					return $scope.editableOverview.tasks[index].defaulted ? "defaulted" : "unchanged";
+				}
+
+				return(
+					$scope.editableOverview.tasks[index].start < $scope.editableOverview.start ||
+					$scope.editableOverview.tasks[index].start > $scope.editableOverview.end
+				) ? "outOfBounds" : "changed"
 			}
 
 			$scope.dayCount = function(dayRef, taskStart)
@@ -341,23 +378,24 @@ angular
 
 				if(sideDrag <= 0)
 				{
-					$scope.currentTask.current.start = resultStart;
+					currentTask.start = resultStart;
 				}
 
 				if(sideDrag >= 0)
 				{
-					$scope.currentTask.current.end   = resultEnd;
+					currentTask.end   = resultEnd;
 				}
 
-				$scope.currentTask.days               = ((new Date ($scope.currentTask.current.end) - new Date($scope.currentTask.current.start)) / 86400000) + 1;
-				$scope.currentTask.progressDays       = $scope.currentTask.days * ($scope.currentTask.progress / 100);
-				$scope.currentTask.lastProgressDay    = Math.ceil($scope.currentTask.progressDays);
-				$scope.currentTask.lastProgDayRemnant = ($scope.currentTask.progressDays - (Math.floor($scope.currentTask.progressDays)));
+				currentTask.days               = ((new Date (currentTask.end) - new Date(currentTask.start)) / 86400000) + 1;
+				currentTask.progressDays       = currentTask.days * (currentTask.progress / 100);
+				currentTask.lastProgressDay    = Math.ceil(currentTask.progressDays);
+				currentTask.lastProgDayRemnant = (currentTask.progressDays - (Math.floor(currentTask.progressDays)));
 			};
 
 			function dragFinish()
 			{
-				$scope.currentTask = null;
+				
+				currentTask = null;
 			};
 
 			$scope.touchAction = function(side, touch, row, dayRef)
@@ -398,29 +436,31 @@ angular
 						</tr>
 					</tbody>
 					<tbody>
-						<tr ng-repeat="task in tasks">
+						<tr ng-repeat="task in editableOverview.tasks">
 							<th class="slot">
 								<div class="cell">
 									{{task.name}}
 								</div>
 							</th>
 							<td ng-repeat="day in days" id="{{$parent.$index + '_' + $index}}" class="slot">
-								<div class="cell" ng-if="(day.ref >= task.current.start && day.ref <= task.current.end)"
-								  ng-class="cellLayout(day.ref, task.current)"
+								<div class="cell" ng-if="(day.ref >= task.start && day.ref <= task.end)"
+								  ng-class="cellLayout(day.ref, task)"
 								>
 									<div touch-fn="touchAction(-1, touch, $parent.$parent.$parent.$parent.$index, day.ref)"
-									  class="taskEdge edgeLeft" ng-if="day.ref == task.current.start"
+									  class="taskEdge edgeLeft" ng-if="day.ref == task.start"
 									>
 									</div>
-									<div touch-fn="touchAction(0, touch, $parent.$parent.$parent.$index, day.ref)" class="task">
-										{{progDay = dayCount(day.ref, task.current.start);""}}
+									<div touch-fn="touchAction(0, touch, $parent.$parent.$parent.$index, day.ref)" class="task"
+									  ng-class="checkBoundingValues($parent.$parent.$index)"
+									>
+										{{progDay = dayCount(day.ref, task.start);""}}
 										<div class="progress" ng-if="task.progress > 0 && progDay < task.progressDays"
 										  ng-style="progEndDisplay(progDay, task.progressDays)"
 										>
 										</div>
 									</div>
 									<div touch-fn="touchAction(1, touch, $parent.$parent.$parent.$parent.$index, day.ref)"
-									  class="taskEdge edgeRight" ng-if="day.ref == task.current.end"
+									  class="taskEdge edgeRight" ng-if="day.ref == task.end"
 									>
 									</div>
 								</div>
