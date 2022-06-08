@@ -96,6 +96,58 @@
 				margin-top    : 8px;
 				border-radius : unset;
 			}
+
+			.chevron
+			{
+				position : relative;
+				height   : 100px;
+				width    :  10px;
+				left     :   8px;
+				padding  :   2px;
+			}
+
+			.chevron:before
+			{
+				top : 15%;
+			}
+
+			.chevron:after
+			{
+				top : 39%;
+			}
+
+			.chevron.left:after, .chevron.right:before
+			{
+				-webkit-transform : skew(25deg, 0deg);
+				-moz-transform    : skew(25deg, 0deg);
+				-ms-transform     : skew(25deg, 0deg);
+				-o-transform      : skew(25deg, 0deg);
+				transform         : skew(25deg, 0deg);
+			}
+
+			.chevron.left:before, .chevron.right:after
+			{
+				-webkit-transform : skew(-25deg, 0deg);
+				-moz-transform    : skew(-25deg, 0deg);
+				-ms-transform     : skew(-25deg, 0deg);
+				-o-transform      : skew(-25deg, 0deg);
+				transform         : skew(-25deg, 0deg);
+			}
+
+			.chevron:before, .chevron:after
+			{
+				content           :       '';
+				position          : absolute;
+				right             :        0;
+				height            :      25%;
+				width             :     100%;
+				background        :  #808080;
+			}
+
+			.project
+			{
+				background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAAB9JREFUGFdjZEAF/xmR+P8ZGBgYYQJgDkgSRMA5IAEAgq4EBI6THD4AAAAASUVORK5CYII=) repeat;
+			}
 		</style>
 <script>
 angular
@@ -210,10 +262,9 @@ angular
 				}
 
 				$scope.editableOverview = angular.copy($scope.selectedOverview);
-
-				let day       = {ref : start};
-				let dayMoment = moment(start, "YYYY-MM-DD");
-				var i         = 0;
+				let day                 = {ref : start};
+				let dayMoment           = moment(start, "YYYY-MM-DD");
+				var i                   = 0;
 				var data;
 
 				while(day.ref <= end)
@@ -414,6 +465,15 @@ angular
 				}
 			};
 
+			$scope.cellLayout = function(dayRef)
+			{
+				if(dayRef >= $scope.selectedOverview.start && dayRef <= $scope.selectedOverview.end)
+				{
+					console.log("!!!");
+					return "project";
+				}
+			}
+
 			init();
 		}
 	);
@@ -442,13 +502,15 @@ angular
 									{{task.name}}
 								</div>
 							</th>
-							<td ng-repeat="day in days" id="{{$parent.$index + '_' + $index}}" class="slot">
-								<div class="cell" ng-if="(day.ref >= task.start && day.ref <= task.end)"
-								  ng-class="cellLayout(day.ref, task)"
-								>
+							<td ng-repeat="day in days" id="{{$parent.$index + '_' + $index}}" ng-class="cellLayout(day.ref)"
+							  class="slot"
+							>
+								<div class="cell" ng-if="(day.ref >= task.start && day.ref <= task.end)">
 									<div touch-fn="touchAction(-1, touch, $parent.$parent.$parent.$parent.$index, day.ref)"
 									  class="taskEdge edgeLeft" ng-if="day.ref == task.start"
 									>
+										<span class="chevron left">
+										</span>
 									</div>
 									<div touch-fn="touchAction(0, touch, $parent.$parent.$parent.$index, day.ref)" class="task"
 									  ng-class="checkBoundingValues($parent.$parent.$index)"
@@ -462,6 +524,8 @@ angular
 									<div touch-fn="touchAction(1, touch, $parent.$parent.$parent.$parent.$index, day.ref)"
 									  class="taskEdge edgeRight" ng-if="day.ref == task.end"
 									>
+										<span class="chevron right">
+										</span>
 									</div>
 								</div>
 							</td>
