@@ -25,17 +25,42 @@
 
 			.slot
 			{
+				height         :     25px;
+				vertical-align :   bottom;
+				position       : relative;
 				border         : 1px solid #000000;
-				vertical-align : bottom;
-				height         : 25px;
 			}
 
 			.cell
 			{
-				width       :    75px;
-				height      :    15px;
-				display     :    flex;
-				align-items : stretch;
+				width       :     75px;
+				height      :     15px;
+				display     :     flex;
+				align-items :  stretch;
+				position    : relative;
+				z-index     :        1;
+			}
+
+			.onToday, .today
+			{
+				/*background : linear-gradient(0deg, rgba(45, 46, 253, 0.25) 0%, rgba(195, 34, 186, 0.5) 100%) !important;*/
+				background-image : linear-gradient(120deg, #EAEE44, #33D0FF);
+				background-color : #333333;
+			}
+
+			.today
+			{
+				top            :  0;
+				left           :  0;
+				opacity        :  0.7;
+				width          : 100%;
+				height         : 100%;
+				position       : absolute;
+				pointer-events : auto;
+				z-index        :    0;
+				/* mix-blend-mode: color;
+				// mix-blend-mode: hard-light;
+				// mix-blend-mode: hue;*/
 			}
 
 			.number
@@ -144,10 +169,28 @@
 				background        :  #808080;
 			}
 
-			.project
+			.slot.grid, .slot.project
 			{
-				background-image : repeating-linear-gradient(143.5deg, #FFFFFF 45.45%, #000000 45.45%, #000 50%, #FFFFFF 50%, #FFFFFF 95.45%, #000000 95.45%, #000000 100%);
-				background-size  : 16.07% 37.9%;
+				background-image:
+					linear-gradient(       #444CF7 2px, transparent 2px),
+					linear-gradient(90deg, #444CF7 2px, transparent 2px),
+					linear-gradient(       #444CF7 1px, transparent 1px),
+					linear-gradient(90deg, #444CF7 1px,     #E5E5F7 1px);
+
+				background-color    : #E5E5F7;
+				background-size     : 50px 50px, 50px 50px, 10px 10px, 10px 10px;
+				background-position : -2px -2px, -2px -2px, -1px -1px, -1px -1px;
+			}
+
+			.slot.grid
+			{
+				opacity : 0.25;
+				
+			}
+
+			.slot.project
+			{
+				opacity : 0.5;
 			}
 		</style>
 <script>
@@ -209,17 +252,17 @@ angular
 		"planning",
 		function($scope)
 		{
-			var start       = "2020-01-01";
-			var end         = "2020-12-31";
-			var currentDrag  = null;
+			var end;
+			var currentDrag = null;
 			var currentTask = null;
 
 			function init()
 			{
 				var overview=
 				{
-					start : "2020-03-01",
-					end   : "2020-05-31",
+					date  : "2022-06-09",
+					start : "2022-03-01",
+					end   : "2022-05-31",
 					tasks :
 					[{
 						name     : "Tarea",
@@ -262,11 +305,12 @@ angular
 					$scope.selectedOverview.tasks[i].lastProgDayRemnant = (progressDays - (Math.floor(progressDays)));
 				}
 
-				$scope.editableOverview = angular.copy($scope.selectedOverview);
-				let day                 = {ref : start};
-				let dayMoment           = moment(start, "YYYY-MM-DD");
-				var i                   = 0;
 				var data;
+				$scope.editableOverview = angular.copy($scope.selectedOverview);
+				let day                 = {ref : $scope.selectedOverview.start.split("-")[0] + "-01-01"};
+				let dayMoment           = moment(day.ref, "YYYY-MM-DD");
+				var i                   = 0;
+				    end                 = $scope.selectedOverview.end.split("-")[0] + "-12-31";
 
 				while(day.ref <= end)
 				{
@@ -285,7 +329,8 @@ angular
 					});
 
 					i++;
-					dayMoment.add(1,"days");
+
+					dayMoment.add(1, "days");
 
 					day.ref = dayMoment.format("YYYY-MM-DD");
 				}
@@ -405,7 +450,7 @@ angular
 				}
 
 				computedStart = drag.start.format("YYYY-MM-DD");
-				computedEnd   = drag.end.format("YYYY-MM-DD");
+				computedEnd   = drag.end.format  ("YYYY-MM-DD");
 
 				if(sideDrag == 0)
 				{
@@ -468,11 +513,15 @@ angular
 
 			$scope.cellLayout = function(dayRef)
 			{
-				if(dayRef >= $scope.selectedOverview.start && dayRef <= $scope.selectedOverview.end)
+				var classes = [];
+
+				/*if($scope.selectedOverview.date == dayRef)
 				{
-					console.log("!!!");
-					return "project";
-				}
+					classes.push("today");
+				}*/
+
+				classes.push(dayRef >= $scope.selectedOverview.start && dayRef <= $scope.selectedOverview.end ? "grid" : "project");
+				return classes;
 			}
 
 			init();
@@ -489,7 +538,7 @@ angular
 							<th class="slot">
 								#
 							</th>
-							<th ng-repeat="day in days" class="slot">
+							<th ng-repeat="day in days" class="slot" ng-class="{'onToday' : day.ref == selectedOverview.date}">
 								<div class="number cell">
 									{{day.ref}}
 								</div>
@@ -529,6 +578,7 @@ angular
 										</span>
 									</div>
 								</div>
+								<div class="today" ng-if="day.ref == selectedOverview.date"></div>
 							</td>
 						</tr>
 					</tbody>
