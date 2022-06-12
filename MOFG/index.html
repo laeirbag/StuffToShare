@@ -8,173 +8,11 @@
 		<link   rel="stylesheet" href="mobile-angular-ui-hover.min.css" />
 		<link   rel="stylesheet" href="mobile-angular-ui-base.min.css" />
 		<link   rel="stylesheet" href="mobile-angular-ui-desktop.min.css" />
+		<link   rel="stylesheet" href="style.css" />
 		<script src="moment.js"        ></script>
 		<script src="angular.min.js"   ></script>
 		<script src="mobile-angular-ui.min.js"></script>
 		<script src="mobile-angular-ui.gestures.min.js"></script>
-		<style>
-			tr
-			{
-				-webkit-touch-callout : none;
-				-webkit-user-select   : none;
-				-khtml-user-select    : none;
-				-moz-user-select      : none;
-				-ms-user-select       : none;
-				user-select           : none;
-			}
-
-			.slot
-			{
-				height         :     25px;
-				vertical-align :   bottom;
-				position       : relative;
-				border         : 1px solid #000000;
-			}
-
-			.cell
-			{
-				width       :     75px;
-				height      :     15px;
-				display     :     flex;
-				align-items :  stretch;
-				position    : relative;
-				z-index     :        1;
-			}
-
-			.onToday, .today
-			{
-				background-image : linear-gradient(120deg, #EAEE44, #33D0FF);
-				background-color : #333333;
-			}
-
-			.today
-			{
-				top            :  0;
-				left           :  0;
-				width          : 100%;
-				height         : 100%;
-				pointer-events : auto;
-			}
-
-			.number
-			{
-				text-align : right;
-			}
-
-			.task
-			{
-				flex       : 3;
-			}
-
-			.changed
-			{
-				background : #11AA11;
-			}
-
-			.unchanged
-			{
-				background : #1166FF;
-			}
-
-			.defaulted
-			{
-				background : #9876AA;
-			}
-
-			.outOfBounds
-			{
-				background : #DD9900;
-			}
-
-			.taskEdge
-			{
-				background : #C7C7C7;
-				flex       : 1;
-			}
-
-			.task, .taskEdge
-			{
-				height : 100% !important;
-			}
-
-			.edgeLeft
-			{
-				border-radius : 15px 0px 0px 15px;
-			}
-
-			.edgeRight
-			{
-				border-radius : 0px 15px 15px 0px;
-			}
-
-			.progress
-			{
-				height        : 50%;
-				background    : #AA0000;
-				margin-top    : 8px;
-				border-radius : unset;
-			}
-
-			.chevron
-			{
-				position : relative;
-				height   : 100px;
-				width    :  10px;
-				left     :   8px;
-				padding  :   2px;
-			}
-
-			.chevron:before
-			{
-				top : 15%;
-			}
-
-			.chevron:after
-			{
-				top : 39%;
-			}
-
-			.chevron.left:after, .chevron.right:before
-			{
-				-webkit-transform : skew(25deg, 0deg);
-				-moz-transform    : skew(25deg, 0deg);
-				-ms-transform     : skew(25deg, 0deg);
-				-o-transform      : skew(25deg, 0deg);
-				transform         : skew(25deg, 0deg);
-			}
-
-			.chevron.left:before, .chevron.right:after
-			{
-				-webkit-transform : skew(-25deg, 0deg);
-				-moz-transform    : skew(-25deg, 0deg);
-				-ms-transform     : skew(-25deg, 0deg);
-				-o-transform      : skew(-25deg, 0deg);
-				transform         : skew(-25deg, 0deg);
-			}
-
-			.chevron:before, .chevron:after
-			{
-				content           :       '';
-				position          : absolute;
-				right             :        0;
-				height            :      25%;
-				width             :     100%;
-				background        :  #808080;
-			}
-
-			.project
-			{
-				background:
-					linear-gradient(27deg , #EAEAEA 5px , transparent  5px)  0    5px,
-					linear-gradient(207deg, #EAEAEA 5px , transparent  5px) 10px  0px,
-					linear-gradient(27deg , #DDDDDD 5px , transparent  5px)  0px 10px,
-					linear-gradient(207deg, #DDDDDD 5px , transparent  5px) 10px  5px,
-					linear-gradient(90deg , #E4E4E4 10px, transparent 10px),
-					linear-gradient(        #E2E2E2 25% ,     #E5E5E5 25% , #E5E5E5 50%, transparent 50%, transparent 75%, #DBDBDB 75%, #DBDBDB);
-				background-color : #ECECEC;
-				background-size  : 20px 20px;
-			}
-		</style>
 <script>
 angular
 	.module("gantt", ["mobile-angular-ui", "mobile-angular-ui.gestures"])
@@ -245,15 +83,33 @@ angular
 					date  : "2022-06-09",
 					start : "2022-03-01",
 					end   : "2022-05-31",
-					tasks :
+					estimated_concepts :
 					[{
 						name     : "Tarea",
-						//start : "2020-04-02",
-						//end   : "2020-07-22"
+						//start : "2022-04-02",
+						//end   : "2022-07-22",
 
-						//start    : "2020-04-01",
-						//end      : "2020-04-01",
-						progress : 50
+						//start    : "2022-04-01",
+						//end      : "2022-04-01",
+						progress_concepts:
+						[
+							{
+								date     : "2022-07-04",
+								progress : 10
+							},
+							{
+								date     : "2022-07-04",
+								progress : 30
+							},
+							{
+								date     : "2022-07-04",
+								progress : 25
+							},
+							{
+								date     : "2022-06-05",
+								progress : 19
+							}
+						]
 					}]
 				};
 					
@@ -261,7 +117,7 @@ angular
 				$scope.dragPoint   = null;
 				$scope.days        = [];
 
-				let count = overview.tasks.length;
+				let count = overview.estimated_concepts.length;
 
 				var data;
 
@@ -269,22 +125,67 @@ angular
 
 				for(let i = 0; i < count; i++)
 				{
-					$scope.selectedOverview.tasks[i].defaulted = $scope.selectedOverview.tasks[i].start == null;
+					$scope.selectedOverview.estimated_concepts[i].progDateCount = {};
 
-					if($scope.selectedOverview.tasks[i].defaulted)
+					$scope.selectedOverview.estimated_concepts[i].progress=
 					{
-						$scope.selectedOverview.tasks[i].start = $scope.selectedOverview.start;
-						$scope.selectedOverview.tasks[i].end   = $scope.selectedOverview.end;
+						start   : null,
+						end     : null,
+						percent :    0
+					};
+
+					if($scope.selectedOverview.estimated_concepts[i].progress_concepts.length > 1)
+					{
+						$scope.selectedOverview.estimated_concepts[i].progress.start=
+							$scope.selectedOverview.estimated_concepts[i].progress_concepts[0].date;
+
+						$scope.selectedOverview.estimated_concepts[i].progress.end=
+							$scope.selectedOverview.estimated_concepts[i].progress_concepts[0].date;
+
+						for(var progress of $scope.selectedOverview.estimated_concepts[i].progress_concepts)
+						{
+							if(progress.date < $scope.selectedOverview.estimated_concepts[i].progress.start)
+							{
+								$scope.selectedOverview.estimated_concepts[i].progress.start   = progress.date;
+							}
+							else
+							{
+								if(progress.date > $scope.selectedOverview.estimated_concepts[i].progress.end)
+								{
+									$scope.selectedOverview.estimated_concepts[i].progress.end = progress.date;
+								}
+							}
+
+							$scope.selectedOverview.estimated_concepts[i].percent += progress.progress
+
+							if($scope.selectedOverview.estimated_concepts[i].progDateCount[progress.date] == null)
+							{
+								$scope.selectedOverview.estimated_concepts[i].progDateCount[progress.date] = 0;
+							}
+
+							$scope.selectedOverview.estimated_concepts[i].progDateCount[progress.date]++;
+						}
 					}
 
-					let days                                            = ((new Date($scope.selectedOverview.tasks[i].end) -
-						new Date($scope.selectedOverview.tasks[i].start)) / 86400000) + 1;
+					$scope.selectedOverview.estimated_concepts[i].defaulted = $scope.selectedOverview.estimated_concepts[i].start == null;
 
-					let progressDays                                    = days * ($scope.selectedOverview.tasks[i].progress / 100);
-					$scope.selectedOverview.tasks[i].days               = days;
-					$scope.selectedOverview.tasks[i].progressDays       = progressDays;
-					$scope.selectedOverview.tasks[i].lastProgressDay    = Math.ceil(progressDays);
-					$scope.selectedOverview.tasks[i].lastProgDayRemnant = (progressDays - (Math.floor(progressDays)));
+					if($scope.selectedOverview.estimated_concepts[i].defaulted)
+					{
+						$scope.selectedOverview.estimated_concepts[i].start = $scope.selectedOverview.start;
+
+						$scope.selectedOverview.estimated_concepts[i].end = $scope.selectedOverview.estimated_concepts[i].progress.start != null
+							? $scope.selectedOverview.estimated_concepts[i].progress.end
+								: $scope.selectedOverview.end;
+					}
+
+					let days                                            = ((new Date($scope.selectedOverview.estimated_concepts[i].end) -
+						new Date($scope.selectedOverview.estimated_concepts[i].start)) / 86400000) + 1;
+
+					let progressDays                                    = days * ($scope.selectedOverview.estimated_concepts[i].progress / 100);
+					$scope.selectedOverview.estimated_concepts[i].days               = days;
+					$scope.selectedOverview.estimated_concepts[i].progressDays       = progressDays;
+					$scope.selectedOverview.estimated_concepts[i].lastProgressDay    = Math.ceil(progressDays);
+					$scope.selectedOverview.estimated_concepts[i].lastProgDayRemnant = (progressDays - (Math.floor(progressDays)));			
 				}
 
 				var data;
@@ -333,7 +234,7 @@ angular
 			function dragBegin(side, index, event)
 			{
 				startPoint  = event.startX;
-				currentTask = $scope.editableOverview.tasks[index];
+				currentTask = $scope.editableOverview.estimated_concepts[index];
 				flippedDrag = false;
 
 				currentDrag=
@@ -369,15 +270,38 @@ angular
 
 			$scope.checkBoundingValues = function(index)
 			{
-				if(angular.equals($scope.editableOverview.tasks[index], $scope.selectedOverview.tasks[index]))
+				if(angular.equals($scope.editableOverview.estimated_concepts[index], $scope.selectedOverview.estimated_concepts[index]))
 				{
-					return $scope.editableOverview.tasks[index].defaulted ? "defaulted" : "unchanged";
+					return $scope.editableOverview.estimated_concepts[index].defaulted ? "defaulted" : "unchanged";
 				}
-
-				return(
-					$scope.editableOverview.tasks[index].start < $scope.editableOverview.start ||
-					$scope.editableOverview.tasks[index].start > $scope.editableOverview.end
-				) ? "outOfBounds" : "changed"
+				
+				return (
+					(
+						$scope.editableOverview.estimated_concepts[index].progress.start != null
+							&&
+						(
+							(
+								$scope.editableOverview.estimated_concepts[index].start >
+									$scope.editableOverview.estimated_concepts[index].progress.end ||
+								$scope.editableOverview.estimated_concepts[index].start >
+									$scope.editableOverview.estimated_concepts[index].progress.start
+							)
+									||
+							(
+								$scope.editableOverview.estimated_concepts[index].end  <
+									$scope.editableOverview.estimated_concepts[index].progress.end ||
+								$scope.editableOverview.estimated_concepts[index].end  <
+									$scope.editableOverview.estimated_concepts[index].progress.start
+							)
+						)
+					)
+						||
+					(
+						$scope.editableOverview.estimated_concepts[index].start < $scope.editableOverview.start ||
+						$scope.editableOverview.estimated_concepts[index].start > $scope.editableOverview.end
+					)
+				)
+					? "outOfBounds" : "changed";
 			}
 
 			$scope.dayCount = function(dayRef, taskStart)
@@ -529,7 +453,7 @@ angular
 						</tr>
 					</tbody>
 					<tbody>
-						<tr ng-repeat="task in editableOverview.tasks">
+						<tr ng-repeat="task in editableOverview.estimated_concepts">
 							<th class="slot">
 								<div class="cell">
 									{{task.name}}
@@ -538,6 +462,9 @@ angular
 							<td ng-repeat="day in days" id="{{$parent.$index + '_' + $index}}" ng-class="cellLayout(day.ref)"
 							  class="slot"
 							>
+								<div ng-if="task.progDateCount[day.ref] != null" class="progressMarker">
+									{{task.progDateCount[day.ref]}}
+								</div>
 								<div class="cell" ng-if="(day.ref >= task.start && day.ref <= task.end)">
 									<div touch-fn="touchAction(-1, touch, $parent.$parent.$parent.$parent.$index, day.ref)"
 									  class="taskEdge edgeLeft" ng-if="day.ref == task.start"

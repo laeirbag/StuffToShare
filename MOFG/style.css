@@ -1,0 +1,171 @@
+tr
+{
+	-webkit-touch-callout : none;
+	-webkit-user-select   : none;
+	-khtml-user-select    : none;
+	-moz-user-select      : none;
+	-ms-user-select       : none;
+	user-select           : none;
+}
+
+.slot
+{
+	height         :     30px;
+	vertical-align :   bottom;
+	position       : relative;
+	border         : 1px solid #000000;
+}
+
+.progressMarker
+{
+	width         :     75px;
+	height        :     15px;
+	border-radius :     15px;
+	text-align    :   center;
+	background    :  #6897BB;
+	color         :  #FFFFFF;
+	position      : absolute;
+	top           :      0px;
+}
+
+.cell
+{
+	width       : 75px;
+	height      : 15px;
+	display     :     flex;
+	align-items :  stretch;
+}
+
+.onToday, .today
+{
+	background-image : linear-gradient(120deg, #EAEE44, #33D0FF);
+	background-color : #333333;
+}
+
+.today
+{
+	top            :   0;
+	left           :   0;
+	width          : 100%;
+	height         : 100%;
+	pointer-events : auto;
+}
+
+.number
+{
+	text-align : right;
+}
+
+.task
+{
+	flex       : 3;
+}
+
+.changed
+{
+	background : #11AA11;
+}
+
+.unchanged
+{
+	background : #1166FF;
+}
+
+.defaulted
+{
+	background : #9876AA;
+}
+
+.outOfBounds
+{
+	background : #DD9900;
+}
+
+.taskEdge
+{
+	background : #C7C7C7;
+	flex       : 1;
+}
+
+.task, .taskEdge
+{
+	height : 100% !important;
+}
+
+.edgeLeft
+{
+	border-radius : 15px 0px 0px 15px;
+}
+
+.edgeRight
+{
+	border-radius : 0px 15px 15px 0px;
+}
+
+.progress
+{
+	height        :    50%;
+	margin-top    :     8px;
+	border-radius :   unset;
+	background    : #AA0000;
+}
+
+.chevron
+{
+	position : relative;
+	height   : 100px;
+	width    :  10px;
+	left     :   8px;
+	padding  :   2px;
+}
+
+.chevron:before
+{
+	top : 15%;
+}
+
+.chevron:after
+{
+	top : 39%;
+}
+
+.chevron.left:after, .chevron.right:before
+{
+	-webkit-transform : skew(25deg, 0deg);
+	-moz-transform    : skew(25deg, 0deg);
+	-ms-transform     : skew(25deg, 0deg);
+	-o-transform      : skew(25deg, 0deg);
+	transform         : skew(25deg, 0deg);
+}
+
+.chevron.left:before, .chevron.right:after
+{
+	-webkit-transform : skew(-25deg, 0deg);
+	-moz-transform    : skew(-25deg, 0deg);
+	-ms-transform     : skew(-25deg, 0deg);
+	-o-transform      : skew(-25deg, 0deg);
+	transform         : skew(-25deg, 0deg);
+}
+
+.chevron:before, .chevron:after
+{
+	content           :       '';
+	position          : absolute;
+	right             :        0;
+	height            :      25%;
+	width             :     100%;
+	background        :  #808080;
+}
+
+.project
+{
+	background:
+		linear-gradient(27deg , #EAEAEA 5px , transparent  5px)  0    5px,
+		linear-gradient(207deg, #EAEAEA 5px , transparent  5px) 10px  0px,
+		linear-gradient(27deg , #DDDDDD 5px , transparent  5px)  0px 10px,
+		linear-gradient(207deg, #DDDDDD 5px , transparent  5px) 10px  5px,
+		linear-gradient(90deg , #E4E4E4 10px, transparent 10px),
+		linear-gradient(        #E2E2E2 25% ,     #E5E5E5 25% , #E5E5E5 50%, transparent 50%, transparent 75%, #DBDBDB 75%, #DBDBDB);
+	background-color : #ECECEC;
+	background-size  : 20px 20px;
+}
