@@ -476,6 +476,12 @@ angular
 						<tr>
 							<th class="slot">
 							</th>
+							<th class="slot">
+								Inicio
+							</th>
+							<th class="slot">
+								Fin
+							</th>
 							<th ng-repeat="day in days" class="slot" ng-class="{'onToday' : day.ref == selectedOverview.date}">
 								<div class="number cell">
 									{{day.ref}}
@@ -486,7 +492,21 @@ angular
 							<th class="slot">
 								Proyecto
 							</th>
-							<th ng-repeat="day in days" class="slot" ng-class="cellLayout(day.ref)">
+							<th class="slot">
+								<div class="cell" style="width : max-content;">
+									{{selectedOverview.start}}
+								</div>
+							</th>
+							<th class="slot">
+								<div class="cell" style="width : max-content;">
+									{{selectedOverview.end}}
+								</div>
+							</th>
+							<th ng-repeat="day in days" class="slot" ng-class="cellLayout(day.ref)"style="vertical-align : unset;">
+								<div ng-if="day.ref >= editableOverview.scope.start && day.ref <= editableOverview.scope.end"
+								  class="levelScope"
+								>
+								</div>
 							</th>
 						</tr>
 					</thead>
@@ -497,15 +517,37 @@ angular
 									{{concept.name}}
 								</div>
 							</th>
+							<th class="slot">
+								<div class="cell" style="width : max-content;">
+									{{concept.start}}
+								</div>
+							</th>
+							<th class="slot">
+								<div class="cell" style="width : max-content;">
+									{{concept.end}}
+								</div>
+							</th>
 							<td ng-repeat="day in days" id="{{$parent.$index + '_' + $index}}" ng-class="cellLayout(day.ref)"
-							  class="slot"
+							  class="slot" style="vertical-align : unset;"
 							>
+								<div class="levelScope" ng-if="day.ref >= concept.start && day.ref <= concept.end">
+								</div>
 							</td>
 						</tr>
 						<tr ng-repeat="task in concept.estimated_concepts">
 							<th class="slot">
 								<div class="cell" style="width : max-content;">
 									{{task.name}}
+								</div>
+							</th>
+							<th class="slot">
+								<div class="cell" style="width : max-content;">
+									{{task.start}}
+								</div>
+							</th>
+							<th class="slot">
+								<div class="cell" style="width : max-content;">
+									{{task.end}}
 								</div>
 							</th>
 							<td ng-repeat="day in days" id="{{$parent.$index + '_' + $index}}" ng-class="cellLayout(day.ref)"
