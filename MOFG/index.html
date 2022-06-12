@@ -80,44 +80,50 @@ angular
 			{
 				var overview=
 				{
-					date  : "2022-06-09",
-					start : "2022-03-01",
-					end   : "2022-05-31",
-					estimated_concepts :
-					[{
-						name     : "Tarea",
-						//start : "2022-04-02",
-						//end   : "2022-07-22",
+					date     : "2022-06-09",
+					start    : "2022-03-01",
+					end      : "2022-05-31",
+					concepts:
+					[
+						{
+							name : "Primer concepto",
+							estimated_concepts :
+							[{
+								name     : "Primera estimación",
+								//start : "2022-04-02",
+								//end   : "2022-07-22",
 
-						//start    : "2022-04-01",
-						//end      : "2022-04-01",
-						progress_concepts:
-						[
-							{
-								date     : "2022-07-04",
-								progress : 10
-							},
-							{
-								date     : "2022-07-04",
-								progress : 30
-							},
-							{
-								date     : "2022-07-04",
-								progress : 25
-							},
-							{
-								date     : "2022-06-05",
-								progress : 19
-							}
-						]
-					}]
+								//start    : "2022-04-01",
+								//end      : "2022-04-01",
+								progress_concepts:
+								[
+									{
+										date     : "2022-07-04",
+										progress : 10
+									},
+									{
+										date     : "2022-07-04",
+										progress : 30
+									},
+									{
+										date     : "2022-07-04",
+										progress : 25
+									},
+									{
+										date     : "2022-06-05",
+										progress : 19
+									}
+								]
+							}]
+						}
+					]
 				};
 					
 
 				$scope.dragPoint   = null;
 				$scope.days        = [];
 
-				let count = overview.estimated_concepts.length;
+				let count = overview.concepts[0].estimated_concepts.length;
 
 				var data;
 
@@ -125,67 +131,67 @@ angular
 
 				for(let i = 0; i < count; i++)
 				{
-					$scope.selectedOverview.estimated_concepts[i].progDateCount = {};
+					$scope.selectedOverview.concepts[0].estimated_concepts[i].progDateCount = {};
 
-					$scope.selectedOverview.estimated_concepts[i].progress=
+					$scope.selectedOverview.concepts[0].estimated_concepts[i].progress=
 					{
 						start   : null,
 						end     : null,
 						percent :    0
 					};
 
-					if($scope.selectedOverview.estimated_concepts[i].progress_concepts.length > 1)
+					if($scope.selectedOverview.concepts[0].estimated_concepts[i].progress_concepts.length > 1)
 					{
-						$scope.selectedOverview.estimated_concepts[i].progress.start=
-							$scope.selectedOverview.estimated_concepts[i].progress_concepts[0].date;
+						$scope.selectedOverview.concepts[0].estimated_concepts[i].progress.start=
+							$scope.selectedOverview.concepts[0].estimated_concepts[i].progress_concepts[0].date;
 
-						$scope.selectedOverview.estimated_concepts[i].progress.end=
-							$scope.selectedOverview.estimated_concepts[i].progress_concepts[0].date;
+						$scope.selectedOverview.concepts[0].estimated_concepts[i].progress.end=
+							$scope.selectedOverview.concepts[0].estimated_concepts[i].progress_concepts[0].date;
 
-						for(var progress of $scope.selectedOverview.estimated_concepts[i].progress_concepts)
+						for(var progress of $scope.selectedOverview.concepts[0].estimated_concepts[i].progress_concepts)
 						{
-							if(progress.date < $scope.selectedOverview.estimated_concepts[i].progress.start)
+							if(progress.date < $scope.selectedOverview.concepts[0].estimated_concepts[i].progress.start)
 							{
-								$scope.selectedOverview.estimated_concepts[i].progress.start   = progress.date;
+								$scope.selectedOverview.concepts[0].estimated_concepts[i].progress.start   = progress.date;
 							}
 							else
 							{
-								if(progress.date > $scope.selectedOverview.estimated_concepts[i].progress.end)
+								if(progress.date > $scope.selectedOverview.concepts[0].estimated_concepts[i].progress.end)
 								{
-									$scope.selectedOverview.estimated_concepts[i].progress.end = progress.date;
+									$scope.selectedOverview.concepts[0].estimated_concepts[i].progress.end = progress.date;
 								}
 							}
 
-							$scope.selectedOverview.estimated_concepts[i].percent += progress.progress
+							$scope.selectedOverview.concepts[0].estimated_concepts[i].percent += progress.progress
 
-							if($scope.selectedOverview.estimated_concepts[i].progDateCount[progress.date] == null)
+							if($scope.selectedOverview.concepts[0].estimated_concepts[i].progDateCount[progress.date] == null)
 							{
-								$scope.selectedOverview.estimated_concepts[i].progDateCount[progress.date] = 0;
+								$scope.selectedOverview.concepts[0].estimated_concepts[i].progDateCount[progress.date] = 0;
 							}
 
-							$scope.selectedOverview.estimated_concepts[i].progDateCount[progress.date]++;
+							$scope.selectedOverview.concepts[0].estimated_concepts[i].progDateCount[progress.date]++;
 						}
 					}
 
-					$scope.selectedOverview.estimated_concepts[i].defaulted = $scope.selectedOverview.estimated_concepts[i].start == null;
+					$scope.selectedOverview.concepts[0].estimated_concepts[i].defaulted = $scope.selectedOverview.concepts[0].estimated_concepts[i].start == null;
 
-					if($scope.selectedOverview.estimated_concepts[i].defaulted)
+					if($scope.selectedOverview.concepts[0].estimated_concepts[i].defaulted)
 					{
-						$scope.selectedOverview.estimated_concepts[i].start = $scope.selectedOverview.start;
+						$scope.selectedOverview.concepts[0].estimated_concepts[i].start = $scope.selectedOverview.start;
 
-						$scope.selectedOverview.estimated_concepts[i].end = $scope.selectedOverview.estimated_concepts[i].progress.start != null
-							? $scope.selectedOverview.estimated_concepts[i].progress.end
+						$scope.selectedOverview.concepts[0].estimated_concepts[i].end = $scope.selectedOverview.concepts[0].estimated_concepts[i].progress.start != null
+							? $scope.selectedOverview.concepts[0].estimated_concepts[i].progress.end
 								: $scope.selectedOverview.end;
 					}
 
-					let days                                            = ((new Date($scope.selectedOverview.estimated_concepts[i].end) -
-						new Date($scope.selectedOverview.estimated_concepts[i].start)) / 86400000) + 1;
+					let days                                            = ((new Date($scope.selectedOverview.concepts[0].estimated_concepts[i].end) -
+						new Date($scope.selectedOverview.concepts[0].estimated_concepts[i].start)) / 86400000) + 1;
 
-					let progressDays                                    = days * ($scope.selectedOverview.estimated_concepts[i].progress / 100);
-					$scope.selectedOverview.estimated_concepts[i].days               = days;
-					$scope.selectedOverview.estimated_concepts[i].progressDays       = progressDays;
-					$scope.selectedOverview.estimated_concepts[i].lastProgressDay    = Math.ceil(progressDays);
-					$scope.selectedOverview.estimated_concepts[i].lastProgDayRemnant = (progressDays - (Math.floor(progressDays)));			
+					let progressDays                                    = days * ($scope.selectedOverview.concepts[0].estimated_concepts[i].progress / 100);
+					$scope.selectedOverview.concepts[0].estimated_concepts[i].days               = days;
+					$scope.selectedOverview.concepts[0].estimated_concepts[i].progressDays       = progressDays;
+					$scope.selectedOverview.concepts[0].estimated_concepts[i].lastProgressDay    = Math.ceil(progressDays);
+					$scope.selectedOverview.concepts[0].estimated_concepts[i].lastProgDayRemnant = (progressDays - (Math.floor(progressDays)));			
 				}
 
 				var data;
@@ -234,7 +240,7 @@ angular
 			function dragBegin(side, index, event)
 			{
 				startPoint  = event.startX;
-				currentTask = $scope.editableOverview.estimated_concepts[index];
+				currentTask = $scope.editableOverview.concepts[0].estimated_concepts[index];
 				flippedDrag = false;
 
 				currentDrag=
@@ -270,35 +276,35 @@ angular
 
 			$scope.checkBoundingValues = function(index)
 			{
-				if(angular.equals($scope.editableOverview.estimated_concepts[index], $scope.selectedOverview.estimated_concepts[index]))
+				if(angular.equals($scope.editableOverview.concepts[0].estimated_concepts[index], $scope.selectedOverview.concepts[0].estimated_concepts[index]))
 				{
-					return $scope.editableOverview.estimated_concepts[index].defaulted ? "defaulted" : "unchanged";
+					return $scope.editableOverview.concepts[0].estimated_concepts[index].defaulted ? "defaulted" : "unchanged";
 				}
 				
 				return (
 					(
-						$scope.editableOverview.estimated_concepts[index].progress.start != null
+						$scope.editableOverview.concepts[0].estimated_concepts[index].progress.start != null
 							&&
 						(
 							(
-								$scope.editableOverview.estimated_concepts[index].start >
-									$scope.editableOverview.estimated_concepts[index].progress.end ||
-								$scope.editableOverview.estimated_concepts[index].start >
-									$scope.editableOverview.estimated_concepts[index].progress.start
+								$scope.editableOverview.concepts[0].estimated_concepts[index].start >
+									$scope.editableOverview.concepts[0].estimated_concepts[index].progress.end ||
+								$scope.editableOverview.concepts[0].estimated_concepts[index].start >
+									$scope.editableOverview.concepts[0].estimated_concepts[index].progress.start
 							)
 									||
 							(
-								$scope.editableOverview.estimated_concepts[index].end  <
-									$scope.editableOverview.estimated_concepts[index].progress.end ||
-								$scope.editableOverview.estimated_concepts[index].end  <
-									$scope.editableOverview.estimated_concepts[index].progress.start
+								$scope.editableOverview.concepts[0].estimated_concepts[index].end  <
+									$scope.editableOverview.concepts[0].estimated_concepts[index].progress.end ||
+								$scope.editableOverview.concepts[0].estimated_concepts[index].end  <
+									$scope.editableOverview.concepts[0].estimated_concepts[index].progress.start
 							)
 						)
 					)
 						||
 					(
-						$scope.editableOverview.estimated_concepts[index].start < $scope.editableOverview.start ||
-						$scope.editableOverview.estimated_concepts[index].start > $scope.editableOverview.end
+						$scope.editableOverview.concepts[0].estimated_concepts[index].start < $scope.editableOverview.start ||
+						$scope.editableOverview.concepts[0].estimated_concepts[index].start > $scope.editableOverview.end
 					)
 				)
 					? "outOfBounds" : "changed";
@@ -440,10 +446,9 @@ angular
 		<div>
 			<div style="overflow-y : auto; height : 100vh;">
 				<table>
-					<tbody>
+					<thead>
 						<tr>
 							<th class="slot">
-								#
 							</th>
 							<th ng-repeat="day in days" class="slot" ng-class="{'onToday' : day.ref == selectedOverview.date}">
 								<div class="number cell">
@@ -451,11 +456,29 @@ angular
 								</div>
 							</th>
 						</tr>
-					</tbody>
-					<tbody>
-						<tr ng-repeat="task in editableOverview.estimated_concepts">
+						<tr>
 							<th class="slot">
-								<div class="cell">
+								Proyecto
+							</th>
+							<th ng-repeat="day in days" class="slot" ng-class="cellLayout(day.ref)">
+							</th>
+						</tr>
+					</thead>
+					<tbody ng-repeat="concept in editableOverview.concepts">
+						<tr>
+							<th class="slot">
+								<div class="cell" style="width : max-content;">
+									{{concept.name}}
+								</div>
+							</th>
+							<td ng-repeat="day in days" id="{{$parent.$index + '_' + $index}}" ng-class="cellLayout(day.ref)"
+							  class="slot"
+							>
+							</td>
+						</tr>
+						<tr ng-repeat="task in concept.estimated_concepts">
+							<th class="slot">
+								<div class="cell" style="width : max-content;">
 									{{task.name}}
 								</div>
 							</th>
