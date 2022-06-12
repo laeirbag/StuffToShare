@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+	<!DOCTYPE html>
 <html>
 	<head>
 		<meta   charset="utf-8">
@@ -43,7 +43,6 @@
 
 			.onToday, .today
 			{
-				/*background : linear-gradient(0deg, rgba(45, 46, 253, 0.25) 0%, rgba(195, 34, 186, 0.5) 100%) !important;*/
 				background-image : linear-gradient(120deg, #EAEE44, #33D0FF);
 				background-color : #333333;
 			}
@@ -52,15 +51,9 @@
 			{
 				top            :  0;
 				left           :  0;
-				opacity        :  0.7;
 				width          : 100%;
 				height         : 100%;
-				position       : absolute;
 				pointer-events : auto;
-				z-index        :    0;
-				/* mix-blend-mode: color;
-				// mix-blend-mode: hard-light;
-				// mix-blend-mode: hue;*/
 			}
 
 			.number
@@ -169,28 +162,17 @@
 				background        :  #808080;
 			}
 
-			.slot.grid, .slot.project
+			.project
 			{
-				background-image:
-					linear-gradient(       #444CF7 2px, transparent 2px),
-					linear-gradient(90deg, #444CF7 2px, transparent 2px),
-					linear-gradient(       #444CF7 1px, transparent 1px),
-					linear-gradient(90deg, #444CF7 1px,     #E5E5F7 1px);
-
-				background-color    : #E5E5F7;
-				background-size     : 50px 50px, 50px 50px, 10px 10px, 10px 10px;
-				background-position : -2px -2px, -2px -2px, -1px -1px, -1px -1px;
-			}
-
-			.slot.grid
-			{
-				opacity : 0.25;
-				
-			}
-
-			.slot.project
-			{
-				opacity : 0.5;
+				background:
+					linear-gradient(27deg , #EAEAEA 5px , transparent  5px)  0    5px,
+					linear-gradient(207deg, #EAEAEA 5px , transparent  5px) 10px  0px,
+					linear-gradient(27deg , #DDDDDD 5px , transparent  5px)  0px 10px,
+					linear-gradient(207deg, #DDDDDD 5px , transparent  5px) 10px  5px,
+					linear-gradient(90deg , #E4E4E4 10px, transparent 10px),
+					linear-gradient(        #E2E2E2 25% ,     #E5E5E5 25% , #E5E5E5 50%, transparent 50%, transparent 75%, #DBDBDB 75%, #DBDBDB);
+				background-color : #ECECEC;
+				background-size  : 20px 20px;
 			}
 		</style>
 <script>
@@ -513,15 +495,16 @@ angular
 
 			$scope.cellLayout = function(dayRef)
 			{
-				var classes = [];
-
-				/*if($scope.selectedOverview.date == dayRef)
+				if($scope.selectedOverview.date == dayRef)
 				{
-					classes.push("today");
-				}*/
+					return "today";
+				}
 
-				classes.push(dayRef >= $scope.selectedOverview.start && dayRef <= $scope.selectedOverview.end ? "grid" : "project");
-				return classes;
+
+				if(dayRef >= $scope.selectedOverview.start && dayRef <= $scope.selectedOverview.end)
+				{
+					return "project";
+				}
 			}
 
 			init();
@@ -578,7 +561,6 @@ angular
 										</span>
 									</div>
 								</div>
-								<div class="today" ng-if="day.ref == selectedOverview.date"></div>
 							</td>
 						</tr>
 					</tbody>
