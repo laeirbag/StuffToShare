@@ -123,75 +123,101 @@ angular
 				$scope.dragPoint   = null;
 				$scope.days        = [];
 
-				let count = overview.concepts[0].estimated_concepts.length;
 
 				var data;
 
-				$scope.selectedOverview = angular.copy(overview);
-
-				for(let i = 0; i < count; i++)
+				$scope.selectedOverview       = angular.copy(overview);
+				let count                     = overview.concepts[0].estimated_concepts.length;
+				$scope.selectedOverview.scope=
 				{
-					$scope.selectedOverview.concepts[0].estimated_concepts[i].progDateCount = {};
+					start : $scope.selectedOverview.start,
+					end   : $scope.selectedOverview.end
+				};
 
-					$scope.selectedOverview.concepts[0].estimated_concepts[i].progress=
+				for(let concept of $scope.selectedOverview.concepts)
+				{
+					for(let task of concept.estimated_concepts)
 					{
-						start   : null,
-						end     : null,
-						percent :    0
-					};
+						task.progDateCount = {};
 
-					if($scope.selectedOverview.concepts[0].estimated_concepts[i].progress_concepts.length > 1)
-					{
-						$scope.selectedOverview.concepts[0].estimated_concepts[i].progress.start=
-							$scope.selectedOverview.concepts[0].estimated_concepts[i].progress_concepts[0].date;
-
-						$scope.selectedOverview.concepts[0].estimated_concepts[i].progress.end=
-							$scope.selectedOverview.concepts[0].estimated_concepts[i].progress_concepts[0].date;
-
-						for(var progress of $scope.selectedOverview.concepts[0].estimated_concepts[i].progress_concepts)
+						if(task.progress_concepts.length > 1)
 						{
-							if(progress.date < $scope.selectedOverview.concepts[0].estimated_concepts[i].progress.start)
+							task.progress=
 							{
-								$scope.selectedOverview.concepts[0].estimated_concepts[i].progress.start   = progress.date;
+								start   : task.progress_concepts[0].date,
+								end     : task.progress_concepts[0].date,
+								percent : 0
 							}
-							else
+
+							task.progress.end=
+								task.progress_concepts[0].date;
+
+							for(var progress of task.progress_concepts)
 							{
-								if(progress.date > $scope.selectedOverview.concepts[0].estimated_concepts[i].progress.end)
+								if(progress.date < task.progress.start)
 								{
-									$scope.selectedOverview.concepts[0].estimated_concepts[i].progress.end = progress.date;
+									task.progress.start   = progress.date;
 								}
+								else
+								{
+									if(progress.date > task.progress.end)
+									{
+										task.progress.end = progress.date;
+									}
+								}
+
+								task.progress.percent += progress.progress
+
+								if(task.progDateCount[progress.date] == null)
+								{
+									task.progDateCount[progress.date] = 0;
+								}
+
+								task.progDateCount[progress.date]++;
 							}
-
-							$scope.selectedOverview.concepts[0].estimated_concepts[i].percent += progress.progress
-
-							if($scope.selectedOverview.concepts[0].estimated_concepts[i].progDateCount[progress.date] == null)
-							{
-								$scope.selectedOverview.concepts[0].estimated_concepts[i].progDateCount[progress.date] = 0;
-							}
-
-							$scope.selectedOverview.concepts[0].estimated_concepts[i].progDateCount[progress.date]++;
 						}
+
+						task.defaulted = task.start == null;
+
+						if(task.defaulted)
+						{
+							task.start = $scope.selectedOverview.start;
+
+							task.end = task.progress.start != null
+								? task.progress.end
+									: $scope.selectedOverview.end;
+						}
+
+						if(concept.start == null)
+						{
+							concept.start = task.start;
+							concept.end   = task.end;
+						}
+						else
+						{
+							if(task.start < concept.start)
+							{
+								concept.start = task.start;
+							}
+
+							if(task.end > concept.end)
+							{
+								concept.end = task.end;
+							}
+						}
+
+						let days                = ((new Date(task.end) - new Date(task.start)) / 86400000) + 1;
+						let progressDays        = days * (task.progress.percent / 100);
+						task.days               = days;
+						task.progressDays       = progressDays;
+						task.lastProgressDay    = Math.ceil(progressDays);
+						task.lastProgDayRemnant = (progressDays - (Math.floor(progressDays)));
 					}
 
-					$scope.selectedOverview.concepts[0].estimated_concepts[i].defaulted = $scope.selectedOverview.concepts[0].estimated_concepts[i].start == null;
-
-					if($scope.selectedOverview.concepts[0].estimated_concepts[i].defaulted)
+					if(concept.end > $scope.selectedOverview.scope.end)
 					{
-						$scope.selectedOverview.concepts[0].estimated_concepts[i].start = $scope.selectedOverview.start;
-
-						$scope.selectedOverview.concepts[0].estimated_concepts[i].end = $scope.selectedOverview.concepts[0].estimated_concepts[i].progress.start != null
-							? $scope.selectedOverview.concepts[0].estimated_concepts[i].progress.end
-								: $scope.selectedOverview.end;
+						$scope.selectedOverview.scope.end = concept.end;
 					}
-
-					let days                                            = ((new Date($scope.selectedOverview.concepts[0].estimated_concepts[i].end) -
-						new Date($scope.selectedOverview.concepts[0].estimated_concepts[i].start)) / 86400000) + 1;
-
-					let progressDays                                    = days * ($scope.selectedOverview.concepts[0].estimated_concepts[i].progress / 100);
-					$scope.selectedOverview.concepts[0].estimated_concepts[i].days               = days;
-					$scope.selectedOverview.concepts[0].estimated_concepts[i].progressDays       = progressDays;
-					$scope.selectedOverview.concepts[0].estimated_concepts[i].lastProgressDay    = Math.ceil(progressDays);
-					$scope.selectedOverview.concepts[0].estimated_concepts[i].lastProgDayRemnant = (progressDays - (Math.floor(progressDays)));			
 				}
 
 				var data;
@@ -499,7 +525,7 @@ angular
 									  ng-class="checkBoundingValues($parent.$parent.$index)"
 									>
 										{{progDay = dayCount(day.ref, task.start);""}}
-										<div class="progress" ng-if="task.progress > 0 && progDay < task.progressDays"
+										<div class="progress" ng-if="task.progress.percent > 0 && progDay < task.progressDays"
 										  ng-style="progEndDisplay(progDay, task.progressDays)"
 										>
 										</div>
