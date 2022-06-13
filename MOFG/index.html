@@ -88,33 +88,78 @@ angular
 						{
 							name : "Primer concepto",
 							estimated_concepts :
-							[{
-								name     : "Primera estimación",
-								//start : "2022-04-02",
-								//end   : "2022-07-22",
-
-								//start    : "2022-04-01",
-								//end      : "2022-04-01",
-								progress_concepts:
-								[
-									{
-										date     : "2022-07-04",
-										progress : 10
-									},
-									{
-										date     : "2022-07-04",
-										progress : 30
-									},
-									{
-										date     : "2022-07-04",
-										progress : 25
-									},
-									{
-										date     : "2022-06-05",
-										progress : 19
-									}
-								]
-							}]
+							[
+								{
+									name     : "Primera estimación",
+									progress_concepts:
+									[
+										{
+											date     : "2022-07-04",
+											progress : 10
+										},
+										{
+											date     : "2022-07-04",
+											progress : 30
+										},
+										{
+											date     : "2022-07-04",
+											progress : 25
+										},
+										{
+											date     : "2022-06-05",
+											progress : 19
+										}
+									]
+								},
+								{
+									name  : "segunda estimación",
+									start : "2022-03-01",
+									end   : "2022-07-05",
+									progress_concepts:
+									[
+										{
+											date     : "2022-07-04",
+											progress : 10
+										},
+										{
+											date     : "2022-03-04",
+											progress : 25
+										},
+										{
+											date     : "2022-06-10",
+											progress : 19
+										}
+									]
+								}
+							]
+						}
+						,{
+							name : "segundo concepto",
+							estimated_concepts :
+							[
+								{
+									name  : "Tercera estimación",
+									start : "2022-04-02",
+									end   : "2022-07-01"
+								},
+								{
+									name     : "Cuarta estimación",
+									progress_concepts:
+									[
+										{
+											date     : "2022-05-03",
+											progress : 10
+										},
+										{
+											date     : "2022-03-14",
+											progress :  5
+										}
+									]
+								},
+								{
+									name  : "Quinta estimación"
+								}
+							]
 						}
 					]
 				};
@@ -126,8 +171,9 @@ angular
 
 				var data;
 
-				$scope.selectedOverview       = angular.copy(overview);
-				let count                     = overview.concepts[0].estimated_concepts.length;
+				$scope.selectedOverview = angular.copy(overview);
+				let count               = overview.concepts[0].estimated_concepts.length;
+
 				$scope.selectedOverview.scope=
 				{
 					start : $scope.selectedOverview.start,
@@ -140,7 +186,7 @@ angular
 					{
 						task.progDateCount = {};
 
-						if(task.progress_concepts.length > 1)
+						if(task.progress_concepts != null && task.progress_concepts.length > 1)
 						{
 							task.progress=
 							{
@@ -182,10 +228,9 @@ angular
 						if(task.defaulted)
 						{
 							task.start = $scope.selectedOverview.start;
-
-							task.end = task.progress.start != null
+							task.end   = (task.progress != null && task.progress.start != null)
 								? task.progress.end
-									: $scope.selectedOverview.end;
+									: task.start;
 						}
 
 						if(concept.start == null)
@@ -207,7 +252,7 @@ angular
 						}
 
 						let days                = ((new Date(task.end) - new Date(task.start)) / 86400000) + 1;
-						let progressDays        = days * (task.progress.percent / 100);
+						let progressDays        = task.progress == null ? 0 : days * (task.progress.percent / 100);
 						task.days               = days;
 						task.progressDays       = progressDays;
 						task.lastProgressDay    = Math.ceil(progressDays);
@@ -300,37 +345,37 @@ angular
 				return {"width" : ((progressDays - intPart) * 100) + "%"};
 			}
 
-			$scope.checkBoundingValues = function(index)
+			$scope.checkBoundingValues = function(index, subIndex)
 			{
-				if(angular.equals($scope.editableOverview.concepts[0].estimated_concepts[index], $scope.selectedOverview.concepts[0].estimated_concepts[index]))
+				if(angular.equals($scope.editableOverview.concepts[index].estimated_concepts[subIndex], $scope.selectedOverview.concepts[index].estimated_concepts[subIndex]))
 				{
-					return $scope.editableOverview.concepts[0].estimated_concepts[index].defaulted ? "defaulted" : "unchanged";
+					return $scope.editableOverview.concepts[index].estimated_concepts[subIndex].defaulted ? "defaulted" : "unchanged";
 				}
-				
+
 				return (
 					(
 						$scope.editableOverview.concepts[0].estimated_concepts[index].progress.start != null
 							&&
 						(
 							(
-								$scope.editableOverview.concepts[0].estimated_concepts[index].start >
-									$scope.editableOverview.concepts[0].estimated_concepts[index].progress.end ||
-								$scope.editableOverview.concepts[0].estimated_concepts[index].start >
-									$scope.editableOverview.concepts[0].estimated_concepts[index].progress.start
+								$scope.editableOverview.concepts[0].estimated_concepts[subIndex].start >
+									$scope.editableOverview.concepts[index].estimated_concepts[subIndex].progress.end ||
+								$scope.editableOverview.concepts[index].estimated_concepts[subIndex].start >
+									$scope.editableOverview.concepts[index].estimated_concepts[subIndex].progress.start
 							)
 									||
 							(
-								$scope.editableOverview.concepts[0].estimated_concepts[index].end  <
-									$scope.editableOverview.concepts[0].estimated_concepts[index].progress.end ||
-								$scope.editableOverview.concepts[0].estimated_concepts[index].end  <
-									$scope.editableOverview.concepts[0].estimated_concepts[index].progress.start
+								$scope.editableOverview.concepts[index].estimated_concepts[subIndex].end  <
+									$scope.editableOverview.concepts[index].estimated_concepts[subIndex].progress.end ||
+								$scope.editableOverview.concepts[index].estimated_concepts[subIndex].end  <
+									$scope.editableOverview.concepts[index].estimated_concepts[subIndex].progress.start
 							)
 						)
 					)
 						||
 					(
-						$scope.editableOverview.concepts[0].estimated_concepts[index].start < $scope.editableOverview.start ||
-						$scope.editableOverview.concepts[0].estimated_concepts[index].start > $scope.editableOverview.end
+						$scope.editableOverview.concepts[index].estimated_concepts[subIndex].start < $scope.editableOverview.start ||
+						$scope.editableOverview.concepts[index].estimated_concepts[subIndex].start > $scope.editableOverview.end
 					)
 				)
 					? "outOfBounds" : "changed";
@@ -502,7 +547,7 @@ angular
 									{{selectedOverview.end}}
 								</div>
 							</th>
-							<th ng-repeat="day in days" class="slot" ng-class="cellLayout(day.ref)"style="vertical-align : unset;">
+							<th ng-repeat="day in days" class="slot summary" ng-class="cellLayout(day.ref)">
 								<div ng-if="day.ref >= editableOverview.scope.start && day.ref <= editableOverview.scope.end"
 								  class="levelScope"
 								>
@@ -514,7 +559,7 @@ angular
 						<tr>
 							<th class="slot">
 								<div class="cell" style="width : max-content;">
-									{{concept.name}}
+									&emsp;{{concept.name}}
 								</div>
 							</th>
 							<th class="slot">
@@ -528,7 +573,7 @@ angular
 								</div>
 							</th>
 							<td ng-repeat="day in days" id="{{$parent.$index + '_' + $index}}" ng-class="cellLayout(day.ref)"
-							  class="slot" style="vertical-align : unset;"
+							  class="slot summary"
 							>
 								<div class="levelScope" ng-if="day.ref >= concept.start && day.ref <= concept.end">
 								</div>
@@ -537,7 +582,7 @@ angular
 						<tr ng-repeat="task in concept.estimated_concepts">
 							<th class="slot">
 								<div class="cell" style="width : max-content;">
-									{{task.name}}
+									&emsp;&emsp;{{task.name}}
 								</div>
 							</th>
 							<th class="slot">
@@ -564,7 +609,7 @@ angular
 										</span>
 									</div>
 									<div touch-fn="touchAction(0, touch, $parent.$parent.$parent.$index, day.ref)" class="task"
-									  ng-class="checkBoundingValues($parent.$parent.$index)"
+									  ng-class="checkBoundingValues($parent.$parent.$parent.$index, $parent.$parent.$index)"
 									>
 										{{progDay = dayCount(day.ref, task.start);""}}
 										<div class="progress" ng-if="task.progress.percent > 0 && progDay < task.progressDays"
