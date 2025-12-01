@@ -1,0 +1,1 @@
+pyinstaller --onefile --noconsole --hidden-import plyer.platforms.win.notification xl2clip.pyw
