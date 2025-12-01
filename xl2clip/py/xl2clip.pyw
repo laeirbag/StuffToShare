@@ -7,11 +7,9 @@ import ctypes
 import sys
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        ctypes.windll.user32.MessageBoxW(0, "Es necesario proveer un sólo archivo de excel válido", "Error", 1)
-
+    if len(sys.argv) != 2 or (sys.argv[1].startswith("~") or not sys.argv[1].endswith(".xls")):
+        ctypes.windll.user32.MessageBoxW(0, "Es necesario proveer un sólo archivo de excel válido (.xls)", "Error", 1)
     else:
-        print(sys.argv)
         try:
             # Read the first sheet from the Excel file
             sheet = pyexcel.get_sheet(file_name=sys.argv[1], sheet_name=0)
@@ -26,5 +24,5 @@ if __name__ == "__main__":
             )
         except Exception as e:
             print(e)
-            ctypes.windll.user32.MessageBoxW(0, str(e), "Error", 1)
+            ctypes.windll.user32.MessageBoxW(0, "El contenido no pudo ser copiado", "Error", 1)
         
